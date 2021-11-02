@@ -4,14 +4,12 @@ This repo adds some support for non linear deformation and registration in QuPat
 
 ## Installing
 
-Download the latest `qupath-extension-warpy-[version].jar` file from [releases](https://github.com/biop/qupath-extension-warpy/releases) and drag it onto the main QuPath window.
+Download the latest `qupath-extension-warpy-[version].zip` file from [releases](https://github.com/biop/qupath-extension-warpy/releases). Unzip it, then and drag its contained files onto the main QuPath window.
 
 If you haven't installed any extensions before, you'll be prompted to select a QuPath user directory.
 The extension will then be copied to a location inside that directory.
 
 You might then need to restart QuPath (but not your computer).
-
-TODO : explain hwo to install extra needed jars
 
 ## Citing
 
