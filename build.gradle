@@ -26,7 +26,7 @@ ext.moduleName = 'qupath.extension.warpy'
 
 description = 'QuPath extension to use Warpy'
 
-version = "0.1.0"
+version = "0.1.1-SNAPSHOT"
 
 dependencies {
     def qupathVersion = "0.3.0" // For now
