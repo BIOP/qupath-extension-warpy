@@ -26,6 +26,10 @@ ext.moduleName = 'qupath.extension.warpy'
 
 description = 'QuPath extension to use Warpy'
 
+group = "ch.epfl.biop"
+
+// artifact = "qupath-extension-warpy"
+
 version = "0.1.1-SNAPSHOT"
 
 dependencies {
