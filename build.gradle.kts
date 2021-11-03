@@ -23,7 +23,7 @@ description = "QuPath extension to use Warpy"
 
 group = "ch.epfl.biop"
 // artifact = "qupath-extension-warpy"
-version = "0.1.1-SNAPSHOT"
+version = "0.1.1.1"
 
 dependencies {
     val qupathVersion = "0.3.0" // For now
@@ -92,7 +92,7 @@ publishing {
         repositories {
             maven {
                 name = "scijavaPublic"
-                url = uri("https://maven.scijava.org/content/groups/public")
+                url = uri("https://maven.scijava.org/content/repositories/releases")
             }
         }
 //        from components . java
