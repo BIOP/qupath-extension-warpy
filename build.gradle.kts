@@ -28,12 +28,12 @@ version = "0.1.1-SNAPSHOT"
 dependencies {
     val qupathVersion = "0.3.0" // For now
 
-    shadow("io.github.qupath:qupath-gui-fx:${qupathVersion}")
+    shadow("io.github.qupath:qupath-gui-fx:$qupathVersion")
     shadow("org.slf4j:slf4j-api:1.7.30")
     implementation("commons-io:commons-io:2.11.0")
     implementation("net.imglib2:imglib2-realtransform:3.1.1")
 
-    testImplementation("io.github.qupath:qupath-gui-fx:${qupathVersion}")
+    testImplementation("io.github.qupath:qupath-gui-fx:$qupathVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
@@ -86,76 +86,15 @@ java {
 
 tasks.test { useJUnitPlatform() }
 
-//------------------------------------------
 publishing {
     publications.create<MavenPublication>("maven") {
-        repositories {
-            maven {
-                name = "scijavaPublic"
-                url = uri("https://maven.scijava.org/content/groups/public")
-            }
+        from(components.getByName("java"))
+    }
+    repositories {
+        maven {
+            name = "scijava"
+            credentials(PasswordCredentials::class)
+            url = uri("https://maven.scijava.org/content/groups/public")
         }
-//        from components . java
-//
-//                pom {
-//                    name = rootProject.name
-//                    description = rootProject.description
-//                    url = "https://github.com/BIOP/qupath-extension-warpy"
-//                    properties["inceptionYear"] = "2021"
-//                    organization {
-//                        name = rootProject.name
-//                        url = "https://github.com/BIOP"
-//                    }
-//                    licenses {
-//                        license {
-//                            name = "GNU Lesser General Public License v3+"
-//                            url = "https://www.gnu.org/licenses/lgpl.html"
-//                            distribution = "repo"
-//                        }
-//                    }
-//                    developers {
-//                        developer {
-//                            id = "nicokiaru"
-//                            name = "Nicolas Chiaruttini"
-//                            url = "https://github.com/NicoKiaru"
-//                            roles.addAll("founder", "lead", "developer", "debugger", "reviewer", "support", "maintainer")
-//                        }
-//                    }
-//                    contributors {
-//                        contributor {
-//                            name = "Olivier Burri"
-//                            url = "https://people.epfl.ch/olivier.burri"
-//                            properties["id"] = "lacan"
-//                        }
-//                    }
-//                    mailingLists { mailingList { name = "none" } }
-//                    scm {
-//                        connection.set("scm:git:git://github.com/BIOP/qupath-extension-warpy")
-//                        developerConnection.set("scm:git:git@github.com:BIOP/qupath-extension-warpy")
-//                        tag = "HEAD" // TODO differs from version
-//                        url = "https://github.com/BIOP/qupath-extension-warpy"
-//                    }
-//                    issueManagement {
-//                        system.set("GitHub Issues")
-//                        url = "https://github.com/BIOP/qupath-extension-warpy/issues"
-//                    }
-//                    ciManagement {
-//                        system.set("GitHub Actions")
-//                        url.set("https://github.com/BIOP/qupath-extension-warpy/actions/")
-//                    }
-//                    distributionManagement {
-//                        // https://stackoverflow.com/a/21760035/1047713
-//                        //                    <snapshotRepository>
-//                        //                        <id>ossrh</id>
-//                        //                        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-//                        //                    </snapshotRepository>
-//                        //                    <repository>
-//                        //                        <id>ossrh</id>
-//                        //                        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-//                        //                    </repository>
-//                    }
-//                    //                artifact("${rootProject.name}-${rootProject.version}-sources.jar")
-//                    //                artifact("${rootProject.name}-${rootProject.version}-javadoc.jar")
-//                }
     }
 }
