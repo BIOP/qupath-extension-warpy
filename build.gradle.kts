@@ -23,7 +23,7 @@ description = "QuPath extension to use Warpy"
 
 group = "ch.epfl.biop"
 // artifact = "qupath-extension-warpy"
-version = "0.1.1.1"
+version = "0.1.1.3"
 
 dependencies {
     val qupathVersion = "0.3.0" // For now
@@ -88,7 +88,8 @@ tasks.test { useJUnitPlatform() }
 
 publishing {
     publications.create<MavenPublication>("maven") {
-        from(components.getByName("java"))
+//        from(components.getByName("java"))
+        artifacts.removeIf { it.classifier == "all" }
     }
     repositories {
         maven {
