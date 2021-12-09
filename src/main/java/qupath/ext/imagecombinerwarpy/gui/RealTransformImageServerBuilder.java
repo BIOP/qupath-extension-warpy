@@ -31,10 +31,10 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 	
 	private ServerBuilder<BufferedImage> builder;
 	//private RealTransform realtransform;
-	private RealTransformInterpolationSequence realtransforminterpolationsequence;
+	private RealTransformInterpolation realtransforminterpolationsequence;
 	
 	//RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransform realtransform) {
-	RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransformInterpolationSequence realtransforminterpolationsequence) {
+	RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransformInterpolation realtransforminterpolationsequence) {
 		//super(metadata);
 		this.metadata = metadata;
 		this.builder = builder;

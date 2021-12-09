@@ -14,7 +14,6 @@
 
 package qupath.ext.imagecombinerwarpy.gui;
 
-
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 
@@ -22,7 +21,6 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 
 public class AffineTransformInterpolationTypeAdapter extends TypeAdapter<AffineTransformInterpolation> {	
 	

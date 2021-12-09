@@ -936,7 +936,7 @@ public class ImageCombinerWarpyPane {
 					}
 									
 					int interpolationMode = interpolationType.get().ordinal();
-					RealTransformInterpolationSequence realtransformsequence = new RealTransformInterpolationSequence(realtransform, interpolationMode);
+					RealTransformInterpolation realtransformsequence = new RealTransformInterpolation(realtransform, interpolationMode);
 					try {
 						transformServerTmp = new RealTransformImageServer(serverTmp, realtransformsequence, interpolationMode);
 					} catch (NoninvertibleTransformException e) {
@@ -1713,6 +1713,5 @@ public class ImageCombinerWarpyPane {
 				
 		}				
 	}
-	
-	
+
 }

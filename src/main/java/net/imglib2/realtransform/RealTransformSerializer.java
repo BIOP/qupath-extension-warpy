@@ -6,7 +6,7 @@ import com.google.gson.stream.JsonReader;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
-import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolationSequence;
+import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
 import qupath.lib.io.GsonTools;
 
 import java.io.FileReader;
@@ -48,7 +48,7 @@ public class RealTransformSerializer {
         builder.registerTypeHierarchyAdapter(BoundedRealTransform.class, new BoundedRealTransformAdapter());
 
         //::dip
-        builder.registerTypeHierarchyAdapter(RealTransformInterpolationSequence.class, new RealTransformInterpolateSequenceAdapter());
+        builder.registerTypeHierarchyAdapter(RealTransformInterpolation.class, new RealTransformInterpolateSequenceAdapter());
 
         return builder.create();
     }
@@ -69,32 +69,9 @@ public class RealTransformSerializer {
 
     //::dip
     public static RealTransform deserialize(JsonReader in, Type type) {
-    	// Strip the start sequence of the Json construct, start object at "type": "InvertibleRealTransformSequence",
-    	// "realtransform": {
-    	//     "inverse": {
-    	//       "type": "InvertibleRealTransformSequence",
-    	//       "size": 3,
-    	//       "realTransform_0": {
-    	//         "type": "AffineTransform3D",
-    	//         "affinetransform3d": [
-    	
-    	// "realtransform": {
-    	// "type": "InvertibleRealTransformSequence",
-    	// "size": 3,
-    	// "realTransform_0": {
-    	//   "type": "AffineTransform3D",
-    	//   "affinetransform3d": [
-    	//     1.7000000007450584E-4,
-    	
-    	// JsonElement jsonElement = Streams.parse(in);
-    	// JsonObject jsonObject = jsonElement.getAsJsonObject();
-    	// JsonElement labelJsonElement = jsonObject.get("inverse");
-        //return getRealTransformAdapter().fromJson(labelJsonElement, RealTransform.class);
-        
         return getRealTransformAdapter().fromJson(in, RealTransform.class);
     }
 
-    
     public static InvertibleRealTransform deserializeInvertible(String jsonString, Type type) {
         return getRealTransformAdapter().fromJson(jsonString, InvertibleRealTransform.class);
     }
@@ -109,33 +86,33 @@ public class RealTransformSerializer {
     }
 	
     //::dip
-    public static RealTransformInterpolationSequence deserializeInterpolationSequence(String jsonString, Type type) {
-        return getRealTransformAdapter().fromJson(jsonString, RealTransformInterpolationSequence.class);
+    public static RealTransformInterpolation deserializeInterpolationSequence(String jsonString, Type type) {
+        return getRealTransformAdapter().fromJson(jsonString, RealTransformInterpolation.class);
     }
 
     //::dip
-    public static RealTransformInterpolationSequence deserializeInterpolationSequence(FileReader reader, Type type) {
-        return getRealTransformAdapter().fromJson(reader, RealTransformInterpolationSequence.class);
+    public static RealTransformInterpolation deserializeInterpolationSequence(FileReader reader, Type type) {
+        return getRealTransformAdapter().fromJson(reader, RealTransformInterpolation.class);
     }
 
     //::dip
-    public static RealTransformInterpolationSequence deserializeInterpolationSequence(JsonReader in, Type type) {
-        return getRealTransformAdapter().fromJson(in, RealTransformInterpolationSequence.class);
+    public static RealTransformInterpolation deserializeInterpolationSequence(JsonReader in, Type type) {
+        return getRealTransformAdapter().fromJson(in, RealTransformInterpolation.class);
     }
     
     //::dip
-    public static class RealTransformInterpolateSequenceAdapter implements JsonSerializer<RealTransformInterpolationSequence>,
-    JsonDeserializer<RealTransformInterpolationSequence> {
+    public static class RealTransformInterpolateSequenceAdapter implements JsonSerializer<RealTransformInterpolation>,
+    JsonDeserializer<RealTransformInterpolation> {
 
 		@Override
-		public RealTransformInterpolationSequence deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+		public RealTransformInterpolation deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
 		    JsonObject obj = jsonElement.getAsJsonObject();
 		
 		    int nTransform = obj.get("size").getAsInt();
 	
 		    int interpolation = obj.get("interpolation").getAsInt();
 
-		    RealTransformInterpolationSequence rtis = new RealTransformInterpolationSequence();
+		    RealTransformInterpolation rtis = new RealTransformInterpolation();
 		
 		    rtis.setInterpolation(interpolation);
 		    
@@ -162,11 +139,11 @@ public class RealTransformSerializer {
 		// (for the moment)
 		//::dip : Serialization is realized by adding this file to the project in the package 'net.imglib2.realtransform'
 		@Override
-		public JsonElement serialize(RealTransformInterpolationSequence rtis, Type type, JsonSerializationContext jsonSerializationContext) {
+		public JsonElement serialize(RealTransformInterpolation rtis, Type type, JsonSerializationContext jsonSerializationContext) {
 		
 		    JsonObject obj = new JsonObject();
 		
-		    obj.addProperty("type", RealTransformInterpolationSequence.class.getSimpleName());
+		    obj.addProperty("type", RealTransformInterpolation.class.getSimpleName());
 		
 		    obj.addProperty("size", ((AbstractRealTransformSequence)rtis.getTransform()).transforms.size());
 
@@ -378,9 +355,7 @@ public class RealTransformSerializer {
             JsonObject obj = jsonElement.getAsJsonObject();
 
             int nTransform = obj.get("size").getAsInt();
-
             RealTransformSequence rts = new RealTransformSequence();
-
             for (int iTransform = 0; iTransform<nTransform; iTransform++) {
                 JsonObject jsonObj = obj.get("realTransform_"+iTransform).getAsJsonObject();
                 if (jsonObj.has("affinetransform3d")) {
@@ -402,11 +377,8 @@ public class RealTransformSerializer {
         public JsonElement serialize(RealTransformSequence rts, Type type, JsonSerializationContext jsonSerializationContext) {
 
             JsonObject obj = new JsonObject();
-
             obj.addProperty("type", RealTransformSequence.class.getSimpleName());
-
             obj.addProperty("size", rts.transforms.size());
-
             for (int iTransform = 0; iTransform<rts.transforms.size(); iTransform++) {
                 obj.add("realTransform_"+iTransform, jsonSerializationContext.serialize(rts.transforms.get(iTransform)));
             }
@@ -424,9 +396,7 @@ public class RealTransformSerializer {
             JsonObject obj = jsonElement.getAsJsonObject();
 
             int nTransform = obj.get("size").getAsInt();
-
             InvertibleRealTransformSequence irts = new InvertibleRealTransformSequence();
-
             for (int iTransform = 0; iTransform<nTransform; iTransform++) {
                 // Special case in order to deserialize directly
                 // affine transforms to AffineTransform3D objects
@@ -453,9 +423,7 @@ public class RealTransformSerializer {
             JsonObject obj = new JsonObject();
 
             obj.addProperty("type", InvertibleRealTransformSequence.class.getSimpleName());
-
             obj.addProperty("size", irts.transforms.size());
-
             for (int iTransform = 0; iTransform<irts.transforms.size(); iTransform++) {
                 obj.add("realTransform_"+iTransform, jsonSerializationContext.serialize(irts.transforms.get(iTransform)));
             }

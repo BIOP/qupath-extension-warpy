@@ -15,8 +15,6 @@
 
 package qupath.ext.imagecombinerwarpy.gui;
 
-import java.io.IOException;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -28,12 +26,12 @@ public class RealTransformTypeAdapter extends TypeAdapter<RealTransform> {
 	public static RealTransformTypeAdapter INSTANCE = new RealTransformTypeAdapter();
 	
 	@Override
-	public void write(JsonWriter out, RealTransform value) throws IOException {
-		RealTransformSerializer.getRealTransformAdapter().toJson((Object)value, value.getClass(), out);
+	public void write(JsonWriter out, RealTransform value) {
+		RealTransformSerializer.getRealTransformAdapter().toJson(value, value.getClass(), out);
 	}
 
 	@Override
-	public RealTransform read(JsonReader in) throws IOException {
+	public RealTransform read(JsonReader in) {
 		RealTransform realtransform = RealTransformSerializer.deserialize(in, RealTransform.class);
 		return realtransform;
 	}

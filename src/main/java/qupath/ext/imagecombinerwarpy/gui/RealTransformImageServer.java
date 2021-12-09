@@ -80,7 +80,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private ImageServerMetadata metadata;
 	
 	private transient ImageRegion region;
-	private RealTransformInterpolationSequence rtis;
+	private RealTransformInterpolation rtis;
 	private RealTransform realtransform;
 	private RealTransform realtransformInverse;
 	
@@ -90,7 +90,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private double[] dsLevels;
 	
 	
-	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolationSequence rtis, int interpolation) throws NoninvertibleTransformException {
+	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
 		super(server);
 		
 		logger.trace("Creating server for {} and Real transform {}", server, rtis);
@@ -512,8 +512,8 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	 * Get the affine transform for this server.
 	 * @return
 	 */
-	public RealTransformInterpolationSequence getTransform() {
-		return new RealTransformInterpolationSequence(rtis);
+	public RealTransformInterpolation getTransform() {
+		return new RealTransformInterpolation(rtis);
 	}
 	 	
 	@Override

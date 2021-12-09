@@ -15,40 +15,34 @@
 
 package qupath.ext.imagecombinerwarpy.gui;
 
-
-import net.imglib2.realtransform.InvertibleRealTransformSequence;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformSequence;
 
-
-public class RealTransformInterpolationSequence {
+public class RealTransformInterpolation {
 
 	public static final int[] interpolationsModes = InterpolationModes.getOrdinalNumbers();
 	public static final String[] interpolationsModeNames = InterpolationModes.getInterpolationTypeName();
 	
 	private int interpolation = 0;
 	
-	private RealTransform transform = null;
+	private RealTransform transform;
 	
-	public RealTransformInterpolationSequence() {
+	public RealTransformInterpolation() {
 		transform = new RealTransformSequence();
 	}
 	
-	public RealTransformInterpolationSequence(RealTransformInterpolationSequence transformInterpolateSequence) {
+	public RealTransformInterpolation(RealTransformInterpolation transformInterpolateSequence) {
 		int interpolation = transformInterpolateSequence.getInterpolation();
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
 		this.transform = transformInterpolateSequence.getTransform();
 	}
 
-	public RealTransformInterpolationSequence(RealTransform transform, int interpolation) {
+	public RealTransformInterpolation(RealTransform transform, int interpolation) {
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
-		if (transform instanceof RealTransformSequence)
-			this.transform = (RealTransformSequence)transform;
-		else if (transform instanceof InvertibleRealTransformSequence)
-			this.transform = (InvertibleRealTransformSequence)transform;
 
+		this.transform = transform;
 	}
 
 	public RealTransform getTransform() {

@@ -14,7 +14,6 @@
 
 package qupath.ext.imagecombinerwarpy.gui;
 
-
 import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.Collection;
