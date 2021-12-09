@@ -111,6 +111,7 @@ import javafx.scene.transform.TransformChangedEvent;
 import javafx.stage.Stage;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformSerializer;
+import qupath.ext.biop.warpy.Warpy;
 import qupath.ext.imagecombinerwarpy.gui.InterpolationModes.InterpolationType;
 import qupath.lib.color.ColorDeconvolutionStains;
 import qupath.lib.display.ChannelDisplayInfo;
@@ -928,7 +929,8 @@ public class ImageCombinerWarpyPane {
 					RealTransform realtransform = null;				
 					File f = new File(filePath);
 					if (f.exists()) {
-						realtransform = getRealTransform( f );
+
+						realtransform = Warpy.getRealTransform( f );
 					}
 					else {
 			        	System.out.println("No transformation file " + f.getName());
@@ -936,7 +938,7 @@ public class ImageCombinerWarpyPane {
 					}
 									
 					int interpolationMode = interpolationType.get().ordinal();
-					RealTransformInterpolation realtransformsequence = new RealTransformInterpolation(realtransform, interpolationMode);
+					RealTransformAndInterpolation realtransformsequence = new RealTransformAndInterpolation(realtransform, interpolationMode);
 					try {
 						transformServerTmp = new RealTransformImageServer(serverTmp, realtransformsequence, interpolationMode);
 					} catch (NoninvertibleTransformException e) {
@@ -1006,23 +1008,6 @@ public class ImageCombinerWarpyPane {
 		// ToDo: Check if there is a more clear and stable solution to add a new project entry.
 		Platform.runLater(() -> QuPathGUI.getInstance().getViewer().setImageData(imageDataCreated));
 		
-	}
-	
-	
-	public static RealTransform getRealTransform(File f) {
-		FileReader fileReader = null;
-		try {
-		    fileReader = new FileReader(f.getAbsolutePath());
-		    RealTransform rt = RealTransformSerializer.deserialize(fileReader, RealTransform.class);
-		    fileReader.close();
-		    return rt;
-		} catch (FileNotFoundException e) {
-		    System.out.println("Transform file " + f.getName() + " not found"); // , e);
-		} catch (IOException e) {
-			System.out.println("Error reading transform file " + f.getName()); //, e);
-		}
-		
-		return null;
 	}
 
 	private boolean containsChannelName(List<String> channelName, String checkName) {

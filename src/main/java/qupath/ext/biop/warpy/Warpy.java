@@ -357,10 +357,10 @@ public class Warpy {
      * @return an imglib2 RealTransform object
      */
     public static RealTransform getRealTransform(File f) {
-        FileReader fileReader = null;
+        FileReader fileReader;
         try {
             fileReader = new FileReader(f.getAbsolutePath());
-            RealTransform rt = RealTransformSerializer.deserialize(fileReader);
+            RealTransform rt = RealTransformSerializer.getRealTransformAdapter().fromJson(fileReader, RealTransform.class);
             fileReader.close();
             return rt;
         } catch (FileNotFoundException e) {

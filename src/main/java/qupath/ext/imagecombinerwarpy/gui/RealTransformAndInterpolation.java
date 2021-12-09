@@ -16,29 +16,28 @@
 package qupath.ext.imagecombinerwarpy.gui;
 
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformSequence;
 
-public class RealTransformInterpolation {
+public class RealTransformAndInterpolation {
 
-	public static final int[] interpolationsModes = InterpolationModes.getOrdinalNumbers();
-	public static final String[] interpolationsModeNames = InterpolationModes.getInterpolationTypeName();
+	transient public static final int[] interpolationsModes = InterpolationModes.getOrdinalNumbers();
+	transient public static final String[] interpolationsModeNames = InterpolationModes.getInterpolationTypeName();
 	
 	private int interpolation = 0;
 	
 	private RealTransform transform;
 	
-	public RealTransformInterpolation() {
-		transform = new RealTransformSequence();
+	public RealTransformAndInterpolation() {
+
 	}
 	
-	public RealTransformInterpolation(RealTransformInterpolation transformInterpolateSequence) {
+	public RealTransformAndInterpolation(RealTransformAndInterpolation transformInterpolateSequence) {
 		int interpolation = transformInterpolateSequence.getInterpolation();
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
 		this.transform = transformInterpolateSequence.getTransform();
 	}
 
-	public RealTransformInterpolation(RealTransform transform, int interpolation) {
+	public RealTransformAndInterpolation(RealTransform transform, int interpolation) {
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
 
@@ -49,7 +48,7 @@ public class RealTransformInterpolation {
 		return transform;
 	}
 	
-	public void setTransform(RealTransformSequence transform) {
+	public void setTransform(RealTransform transform) {
 		this.transform = transform;
 	}
 	

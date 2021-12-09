@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
+import net.imglib2.realtransform.RealTransform;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.ImageServerBuilder.ServerBuilder;
@@ -30,21 +31,23 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 	private ImageServerMetadata metadata;
 	
 	private ServerBuilder<BufferedImage> builder;
+
 	//private RealTransform realtransform;
-	private RealTransformInterpolation realtransforminterpolationsequence;
+
+	private RealTransformAndInterpolation realtransforminterpolation;
 	
 	//RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransform realtransform) {
-	RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransformInterpolation realtransforminterpolationsequence) {
+	RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransformAndInterpolation realtransforminterpolation) {
 		//super(metadata);
 		this.metadata = metadata;
 		this.builder = builder;
-		this.realtransforminterpolationsequence = realtransforminterpolationsequence;
+		this.realtransforminterpolation = realtransforminterpolation;
 	}
 	
 	//@Override
 	protected ImageServer<BufferedImage> buildOriginal() throws Exception {
-		int interpolation = realtransforminterpolationsequence.getInterpolation();
-		return new RealTransformImageServer(builder.build(), realtransforminterpolationsequence, interpolation);
+		int interpolation = realtransforminterpolation.getInterpolation();
+		return new RealTransformImageServer(builder.build(), realtransforminterpolation, interpolation);
 	}
 
 	protected ImageServerMetadata getMetadata() {
@@ -71,7 +74,7 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 		ServerBuilder<BufferedImage> newBuilder = builder.updateURIs(updateMap);
 		if (newBuilder == builder)
 			return this;
-		return new RealTransformImageServerBuilder(getMetadata(), newBuilder, realtransforminterpolationsequence);
+		return new RealTransformImageServerBuilder(getMetadata(), newBuilder, realtransforminterpolation);
 	}
 
 

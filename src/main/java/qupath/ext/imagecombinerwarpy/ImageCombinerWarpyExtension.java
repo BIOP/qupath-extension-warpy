@@ -36,20 +36,14 @@
  *********************************/
 package qupath.ext.imagecombinerwarpy;
 
+import net.imglib2.realtransform.RealTransformSerializer;
 import org.controlsfx.control.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 
-import net.imglib2.realtransform.RealTransform;
-import qupath.ext.imagecombinerwarpy.gui.AffineTransformInterpolationImageServerBuilder;
-import qupath.ext.imagecombinerwarpy.gui.AffineTransformInterpolationTypeAdapter;
-import qupath.ext.imagecombinerwarpy.gui.InteractiveImageCombinerWarpyCommand;
-import qupath.ext.imagecombinerwarpy.gui.RealTransformImageServerBuilder;
-import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
-import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolationTypeAdapter;
-import qupath.ext.imagecombinerwarpy.gui.RealTransformTypeAdapter;
+import qupath.ext.imagecombinerwarpy.gui.*;
 import qupath.lib.common.Version;
 import qupath.lib.gui.ActionTools;
 import qupath.lib.gui.ActionTools.ActionDescription;
@@ -103,9 +97,10 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 			typeAdapterFactory.registerSubtype(AffineTransformInterpolationImageServerBuilder.class, "transforminterpolate");
 			
 			GsonBuilder builder = GsonTools.getDefaultBuilder();
-			builder.registerTypeAdapter(RealTransform.class, new RealTransformTypeAdapter());
+
 			builder.registerTypeAdapter(AffineTransformInterpolationTypeAdapter.class, new AffineTransformInterpolationTypeAdapter());
-			builder.registerTypeAdapter(RealTransformInterpolation.class, new RealTransformInterpolationTypeAdapter());
+			RealTransformSerializer.addRealTransformAdapters(builder);
+			builder.registerTypeAdapter(RealTransformAndInterpolation.class, new RealTransformSerializer.RealTransformAndInterpolationAdapter());
 
 			// Add ImageCombinerWarpy
 	    	qupath.installActions(ActionTools.getAnnotatedActions(new ExperimentalCommands(qupath)));

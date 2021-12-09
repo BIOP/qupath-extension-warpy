@@ -51,10 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.imglib2.realtransform.InvertibleRealTransform;
-import net.imglib2.realtransform.InvertibleRealTransformSequence;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformSerializer;
-import net.imglib2.realtransform.RealTransformSequence;
 import qupath.lib.awt.common.AwtTools;
 import qupath.ext.imagecombinerwarpy.gui.InterpolationModes.InterpolationType;
 import qupath.lib.gui.dialogs.Dialogs;
@@ -80,7 +77,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private ImageServerMetadata metadata;
 	
 	private transient ImageRegion region;
-	private RealTransformInterpolation rtis;
+	private RealTransformAndInterpolation rtis;
 	private RealTransform realtransform;
 	private RealTransform realtransformInverse;
 	
@@ -90,7 +87,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private double[] dsLevels;
 	
 	
-	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
+	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformAndInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
 		super(server);
 		
 		logger.trace("Creating server for {} and Real transform {}", server, rtis);
@@ -100,15 +97,9 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		this.interpolationMode = InterpolationModes.getInterpolationType(rtis.getInterpolation());
 
 		if (rtis.getTransform() instanceof InvertibleRealTransform) {
-			this.realtransform = rtis.getTransform();			
-		}
-		else { 
-			InvertibleRealTransformSequence tmpRTS = RealTransformSerializer.convertToIRTS((RealTransformSequence)(rtis.getTransform()));
-			this.realtransform = tmpRTS;
-		}
-		
-		if (realtransform instanceof InvertibleRealTransform)
+			this.realtransform = rtis.getTransform();
 			this.realtransformInverse = ((InvertibleRealTransform) realtransform).inverse();
+		}
 		else {
 			throw new NoninvertibleTransformException("realtransform not invertable");
 		}
@@ -512,8 +503,8 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	 * Get the affine transform for this server.
 	 * @return
 	 */
-	public RealTransformInterpolation getTransform() {
-		return new RealTransformInterpolation(rtis);
+	public RealTransformAndInterpolation getTransform() {
+		return new RealTransformAndInterpolation(rtis);
 	}
 	 	
 	@Override
