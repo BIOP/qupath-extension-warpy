@@ -21,19 +21,19 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import net.imglib2.realtransform.RealTransformDeSerializer_ICW;
+import net.imglib2.realtransform.RealTransformSerializer;
 
 public class RealTransformInterpolationTypeAdapter extends TypeAdapter<RealTransformInterpolationSequence> {	
 	public static RealTransformInterpolationTypeAdapter INSTANCE = new RealTransformInterpolationTypeAdapter();
 	
 	@Override
 	public void write(JsonWriter out, RealTransformInterpolationSequence value) throws IOException {
-		RealTransformDeSerializer_ICW.getRealTransformAdapter().toJson((Object)value, value.getClass(), out);		
+		RealTransformSerializer.getRealTransformAdapter().toJson((Object)value, value.getClass(), out);
 	}
 
 	@Override
 	public RealTransformInterpolationSequence read(JsonReader in) throws IOException {
-		RealTransformInterpolationSequence realtransformInterpolation = RealTransformDeSerializer_ICW.deserializeInterpolationSequence(in, RealTransformInterpolationSequence.class);		
+		RealTransformInterpolationSequence realtransformInterpolation = RealTransformSerializer.deserializeInterpolationSequence(in, RealTransformInterpolationSequence.class);
 		return realtransformInterpolation;
 	}
 }

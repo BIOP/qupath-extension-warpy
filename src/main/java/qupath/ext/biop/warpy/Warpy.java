@@ -3,6 +3,7 @@ package qupath.ext.biop.warpy;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformSerializer;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFilter;
 import org.locationtech.jts.geom.Geometry;
@@ -350,7 +351,7 @@ public class Warpy {
     }
 
     /**
-     * Uses {@link RealTransformDeSerializer} to deserialize a RealTransform object
+     * Uses {@link RealTransformSerializer} to deserialize a RealTransform object
      *
      * @param f file to deserialize
      * @return an imglib2 RealTransform object
@@ -359,7 +360,7 @@ public class Warpy {
         FileReader fileReader = null;
         try {
             fileReader = new FileReader(f.getAbsolutePath());
-            RealTransform rt = RealTransformDeSerializer.deserialize(fileReader);
+            RealTransform rt = RealTransformSerializer.deserialize(fileReader);
             fileReader.close();
             return rt;
         } catch (FileNotFoundException e) {

@@ -22,7 +22,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import net.imglib2.realtransform.InvertibleRealTransform;
-import net.imglib2.realtransform.RealTransformDeSerializer_ICW;
+import net.imglib2.realtransform.RealTransformSerializer;
 
 public class InvertibleRealTransformTypeAdapter extends TypeAdapter<InvertibleRealTransform> {	
 
@@ -30,12 +30,12 @@ public class InvertibleRealTransformTypeAdapter extends TypeAdapter<InvertibleRe
 	
 	@Override
 	public void write(JsonWriter out, InvertibleRealTransform value) throws IOException {
-		RealTransformDeSerializer_ICW.getRealTransformAdapter().toJson((Object)value, value.getClass(), out);		
+		RealTransformSerializer.getRealTransformAdapter().toJson((Object)value, value.getClass(), out);
 	}
 
 	@Override
 	public InvertibleRealTransform read(JsonReader in) throws IOException {
-		InvertibleRealTransform realtransform = RealTransformDeSerializer_ICW.deserializeInvertible(in, InvertibleRealTransform.class);
+		InvertibleRealTransform realtransform = RealTransformSerializer.deserializeInvertible(in, InvertibleRealTransform.class);
 		return realtransform;
 	}
 

@@ -34,8 +34,6 @@
  * Peter Haub (@phaub), Oct 2021
  * 
  *********************************/
-
-
 package qupath.ext.imagecombinerwarpy;
 
 import org.controlsfx.control.action.Action;
@@ -76,7 +74,6 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 	private static boolean alreadyInstalled = false;
 	
 	private static Version minimumVersion = Version.parse("0.3.0-SNAPSHOT");
-
 
 	@SuppressWarnings("javadoc")
 	public class ExperimentalCommands {
@@ -137,7 +134,7 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 		} catch (Exception e) {
 			logger.debug("Version check exception: " + e.getLocalizedMessage(), e);
 		}
-		logger.warn("OMERO extension is not compatible with the current QuPath version ({}.{}.{} required)",
+		logger.warn("ImageCombinerWarpy extension is not compatible with the current QuPath version ({}.{}.{} required)",
 				minimumVersion.getMajor(), minimumVersion.getMinor(), minimumVersion.getPatch());
 		return false;
 	}
@@ -149,7 +146,7 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 
     @Override
     public String getDescription() {
-		String msg = "Add ImageCombinerWarpy to QuPath 0.3.0 menu Analyze\n";
+		String msg = "Add ImageCombinerWarpy to QuPath 0.3 menu Analyze\n";
 		msg += "Register and combine multiple images and add a new project entry.\n";
 		msg += "Author: Peter Haub, Oct 2021\n";
 		msg += "(Main Source: ImageAlignmentPane.java by Pete Bankhead)\n";

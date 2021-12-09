@@ -1,28 +1,36 @@
-package qupath.ext.biop.warpy;
+package net.imglib2.realtransform;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
+
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.FinalRealInterval;
-import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolationSequence;
 import qupath.lib.io.GsonTools;
 
 import java.io.FileReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
+
 /**
  * Duplication of the real transform serialisation already used in
  * bigdataviewer-playground - copied again to avoid to import too many dependencies
+ * 
+ * 
+ * //::dip
+ * Note: This file comes from RealTransformDeSerializer.java (BIOP Tools Extension, EPFL, CH) 
+ * and was added to this project and modified for usage with the ImageCombinerWarpy (ICW) by @phaub (Oct 2021).
+ *
  */
 
-public class RealTransformDeSerializer {
+public class RealTransformSerializer {
 
     public static Gson getRealTransformAdapter() {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
         builder.registerTypeHierarchyAdapter(AffineTransform3D.class, new AffineTransform3DAdapter());
-
-        GsonTools.SubTypeAdapterFactory factoryRealTransform = GsonTools.createSubTypeAdapterFactory(RealTransform.class, "type");
+        GsonTools.SubTypeAdapterFactory<RealTransform> factoryRealTransform = GsonTools.createSubTypeAdapterFactory(RealTransform.class, "type");//, RealTransform.class.getSimpleName());
 
         factoryRealTransform.registerSubtype(ThinplateSplineTransform.class);
         factoryRealTransform.registerSubtype(Wrapped2DTransformAs3D.class);
@@ -39,8 +47,16 @@ public class RealTransformDeSerializer {
         builder.registerTypeHierarchyAdapter(InvertibleRealTransformSequence.class, new InvertibleRealTransformSequenceAdapter());
         builder.registerTypeHierarchyAdapter(BoundedRealTransform.class, new BoundedRealTransformAdapter());
 
+        //::dip
+        builder.registerTypeHierarchyAdapter(RealTransformInterpolationSequence.class, new RealTransformInterpolateSequenceAdapter());
+
         return builder.create();
     }
+
+    public static RealTransform deserialize(FileReader reader, Type type) {
+        return getRealTransformAdapter().fromJson(reader, RealTransform.class);
+    }
+
 
     public static RealTransform deserialize(String jsonString) {
         return getRealTransformAdapter().fromJson(jsonString, RealTransform.class);
@@ -49,6 +65,134 @@ public class RealTransformDeSerializer {
     public static RealTransform deserialize(FileReader reader) {
         return getRealTransformAdapter().fromJson(reader, RealTransform.class);
     }
+
+
+    //::dip
+    public static RealTransform deserialize(JsonReader in, Type type) {
+    	// Strip the start sequence of the Json construct, start object at "type": "InvertibleRealTransformSequence",
+    	// "realtransform": {
+    	//     "inverse": {
+    	//       "type": "InvertibleRealTransformSequence",
+    	//       "size": 3,
+    	//       "realTransform_0": {
+    	//         "type": "AffineTransform3D",
+    	//         "affinetransform3d": [
+    	
+    	// "realtransform": {
+    	// "type": "InvertibleRealTransformSequence",
+    	// "size": 3,
+    	// "realTransform_0": {
+    	//   "type": "AffineTransform3D",
+    	//   "affinetransform3d": [
+    	//     1.7000000007450584E-4,
+    	
+    	// JsonElement jsonElement = Streams.parse(in);
+    	// JsonObject jsonObject = jsonElement.getAsJsonObject();
+    	// JsonElement labelJsonElement = jsonObject.get("inverse");
+        //return getRealTransformAdapter().fromJson(labelJsonElement, RealTransform.class);
+        
+        return getRealTransformAdapter().fromJson(in, RealTransform.class);
+    }
+
+    
+    public static InvertibleRealTransform deserializeInvertible(String jsonString, Type type) {
+        return getRealTransformAdapter().fromJson(jsonString, InvertibleRealTransform.class);
+    }
+
+    public static InvertibleRealTransform deserializeInvertible(FileReader reader, Type type) {
+        return getRealTransformAdapter().fromJson(reader, InvertibleRealTransform.class);
+    }
+
+    //::dip
+    public static InvertibleRealTransform deserializeInvertible(JsonReader in, Type type) {
+        return getRealTransformAdapter().fromJson(in, InvertibleRealTransform.class);
+    }
+	
+    //::dip
+    public static RealTransformInterpolationSequence deserializeInterpolationSequence(String jsonString, Type type) {
+        return getRealTransformAdapter().fromJson(jsonString, RealTransformInterpolationSequence.class);
+    }
+
+    //::dip
+    public static RealTransformInterpolationSequence deserializeInterpolationSequence(FileReader reader, Type type) {
+        return getRealTransformAdapter().fromJson(reader, RealTransformInterpolationSequence.class);
+    }
+
+    //::dip
+    public static RealTransformInterpolationSequence deserializeInterpolationSequence(JsonReader in, Type type) {
+        return getRealTransformAdapter().fromJson(in, RealTransformInterpolationSequence.class);
+    }
+    
+    //::dip
+    public static class RealTransformInterpolateSequenceAdapter implements JsonSerializer<RealTransformInterpolationSequence>,
+    JsonDeserializer<RealTransformInterpolationSequence> {
+
+		@Override
+		public RealTransformInterpolationSequence deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+		    JsonObject obj = jsonElement.getAsJsonObject();
+		
+		    int nTransform = obj.get("size").getAsInt();
+	
+		    int interpolation = obj.get("interpolation").getAsInt();
+
+		    RealTransformInterpolationSequence rtis = new RealTransformInterpolationSequence();
+		
+		    rtis.setInterpolation(interpolation);
+		    
+            RealTransformSequence rts = new RealTransformSequence();
+
+		    for (int iTransform = 0; iTransform<nTransform; iTransform++) {
+		        JsonObject jsonObj = obj.get("realTransform_"+iTransform).getAsJsonObject();
+		        if (jsonObj.has("affinetransform3d")) {
+		            AffineTransform3D at3D = jsonDeserializationContext.deserialize(obj.get("realTransform_"+iTransform), AffineTransform3D.class);
+		            rts.add(at3D);
+		        } else {
+		            RealTransform transform = jsonDeserializationContext.deserialize(obj.get("realTransform_"+iTransform), RealTransform.class);
+		            rts.add(transform);
+		        }
+		    }
+		
+		    rtis.setTransform(rts);
+		    
+		    return rtis;
+		}
+		
+		// Could not serialize because of RealTransformSequence#transforms field protected access,
+		// this would need to change the class of package location, but serialization within QuPath is not required anyway
+		// (for the moment)
+		//::dip : Serialization is realized by adding this file to the project in the package 'net.imglib2.realtransform'
+		@Override
+		public JsonElement serialize(RealTransformInterpolationSequence rtis, Type type, JsonSerializationContext jsonSerializationContext) {
+		
+		    JsonObject obj = new JsonObject();
+		
+		    obj.addProperty("type", RealTransformInterpolationSequence.class.getSimpleName());
+		
+		    obj.addProperty("size", ((AbstractRealTransformSequence)rtis.getTransform()).transforms.size());
+
+		    obj.addProperty("interpolation", rtis.getInterpolation());
+
+		    for (int iTransform = 0; iTransform < ((AbstractRealTransformSequence)rtis.getTransform()).transforms.size(); iTransform++) {
+		        obj.add("realTransform_"+iTransform, 
+		        	jsonSerializationContext.serialize(((AbstractRealTransformSequence)rtis.getTransform()).transforms.get(iTransform)));
+		    }
+		
+		    return obj;
+		}
+    }
+    
+    
+    //::dip
+    public static InvertibleRealTransformSequence convertToIRTS(RealTransformSequence rts) {
+    	InvertibleRealTransformSequence irts = new InvertibleRealTransformSequence();
+    	
+        for (int iTransform = 0; iTransform < rts.transforms.size(); iTransform++) {
+        	irts.add((InvertibleRealTransform)(rts.transforms.get(iTransform)));
+        }
+    	
+        return irts;
+    }
+
 
     public static class ThinPlateSplineTransformAdapter implements JsonSerializer<ThinplateSplineTransform>,
             JsonDeserializer<ThinplateSplineTransform> {
@@ -226,7 +370,7 @@ public class RealTransformDeSerializer {
     }
 
 
-    public static class RealTransformSequenceAdapter implements //JsonSerializer<RealTransformSequence>,
+    public static class RealTransformSequenceAdapter implements JsonSerializer<RealTransformSequence>,
             JsonDeserializer<RealTransformSequence> {
 
         @Override
@@ -254,7 +398,7 @@ public class RealTransformDeSerializer {
         // Could not serialize because of RealTransformSequence#transforms field protected access,
         // this would need to change the class of package location, but serialization within QuPath is not required anyway
         // (for the moment)
-        /*@Override
+        @Override
         public JsonElement serialize(RealTransformSequence rts, Type type, JsonSerializationContext jsonSerializationContext) {
 
             JsonObject obj = new JsonObject();
@@ -268,11 +412,11 @@ public class RealTransformDeSerializer {
             }
 
             return obj;
-        }*/
+        }
     }
 
 
-    public static class InvertibleRealTransformSequenceAdapter implements //JsonSerializer<RealTransformSequence>,
+    public static class InvertibleRealTransformSequenceAdapter implements JsonSerializer<InvertibleRealTransformSequence>,
             JsonDeserializer<InvertibleRealTransformSequence> {
 
         @Override
@@ -304,7 +448,7 @@ public class RealTransformDeSerializer {
             return irts;
         }
 
-        /*@Override
+        @Override
         public JsonElement serialize(InvertibleRealTransformSequence irts, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject obj = new JsonObject();
 
@@ -317,7 +461,8 @@ public class RealTransformDeSerializer {
             }
 
             return obj;
-        }*/
+        }
     }
 
+    
 }

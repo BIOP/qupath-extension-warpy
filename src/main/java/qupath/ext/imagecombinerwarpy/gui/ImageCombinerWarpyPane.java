@@ -110,7 +110,7 @@ import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.TransformChangedEvent;
 import javafx.stage.Stage;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformDeSerializer_ICW;
+import net.imglib2.realtransform.RealTransformSerializer;
 import qupath.ext.imagecombinerwarpy.gui.InterpolationModes.InterpolationType;
 import qupath.lib.color.ColorDeconvolutionStains;
 import qupath.lib.display.ChannelDisplayInfo;
@@ -118,7 +118,6 @@ import qupath.lib.display.ImageDisplay;
 import qupath.lib.geom.Point2;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.dialogs.Dialogs;
-import qupath.lib.gui.images.stores.ImageRenderer;
 import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.gui.tools.PaneTools;
 import qupath.lib.gui.viewer.QuPathViewer;
@@ -157,7 +156,7 @@ import qupath.opencv.tools.OpenCVTools;
  * 
  * .. a QuPath extension based on the QuPath 'Interactive Image Alignment' tool
  *  
- * The ImageCombinerWarpy is thought as an experimental² tool.
+ * The ImageCombinerWarpy is thought as an experimentalï¿½ tool.
  * 
  * It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -1014,7 +1013,7 @@ public class ImageCombinerWarpyPane {
 		FileReader fileReader = null;
 		try {
 		    fileReader = new FileReader(f.getAbsolutePath());
-		    RealTransform rt = RealTransformDeSerializer_ICW.deserialize(fileReader, RealTransform.class);
+		    RealTransform rt = RealTransformSerializer.deserialize(fileReader, RealTransform.class);
 		    fileReader.close();
 		    return rt;
 		} catch (FileNotFoundException e) {

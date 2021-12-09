@@ -53,17 +53,15 @@ import org.slf4j.LoggerFactory;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.InvertibleRealTransformSequence;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformDeSerializer_ICW;
+import net.imglib2.realtransform.RealTransformSerializer;
 import net.imglib2.realtransform.RealTransformSequence;
 import qupath.lib.awt.common.AwtTools;
 import qupath.ext.imagecombinerwarpy.gui.InterpolationModes.InterpolationType;
 import qupath.lib.gui.dialogs.Dialogs;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerBuilder.ServerBuilder;
-import qupath.lib.images.servers.RotatedImageServer.Rotation;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.PixelCalibration;
-import qupath.lib.images.servers.RotatedImageServer;
 import qupath.lib.images.servers.TransformingImageServer;
 import qupath.lib.regions.ImageRegion;
 import qupath.lib.regions.RegionRequest;
@@ -105,7 +103,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 			this.realtransform = rtis.getTransform();			
 		}
 		else { 
-			InvertibleRealTransformSequence tmpRTS = RealTransformDeSerializer_ICW.convertToIRTS((RealTransformSequence)(rtis.getTransform()));
+			InvertibleRealTransformSequence tmpRTS = RealTransformSerializer.convertToIRTS((RealTransformSequence)(rtis.getTransform()));
 			this.realtransform = tmpRTS;
 		}
 		

@@ -1,10 +1,8 @@
-package qupath.ext.biop.warpy;
+package net.imglib2.realtransform;
 
 import net.imglib2.RealInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
-import net.imglib2.realtransform.InvertibleRealTransform;
-import net.imglib2.realtransform.RealTransform;
 
 public class BoundedRealTransform implements InvertibleRealTransform {
 
