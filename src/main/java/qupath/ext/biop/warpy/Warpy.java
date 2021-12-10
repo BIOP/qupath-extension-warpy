@@ -57,6 +57,8 @@ import static qupath.lib.scripting.QP.*;
 
 public class Warpy {
 
+    final static public String version = "0.2.0-SNAPSHOT";
+
     // Logger class that plays well with QuPath
     final private static Logger logger = LoggerFactory.getLogger(Warpy.class);
 

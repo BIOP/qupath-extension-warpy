@@ -15,6 +15,7 @@
 package qupath.ext.imagecombinerwarpy.gui;
 
 import net.imglib2.realtransform.RealTransform;
+import qupath.ext.biop.warpy.Warpy;
 
 public class RealTransformInterpolation {
 
@@ -24,12 +25,23 @@ public class RealTransformInterpolation {
 	private int interpolation = 0;
 	
 	private RealTransform transform;
+
+	String version;
 	
 	public RealTransformInterpolation() {
+		version = Warpy.version;
+	}
 
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
 	}
 	
 	public RealTransformInterpolation(RealTransformInterpolation transformInterpolateSequence) {
+		version = Warpy.version;
 		int interpolation = transformInterpolateSequence.getInterpolation();
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
@@ -37,6 +49,7 @@ public class RealTransformInterpolation {
 	}
 
 	public RealTransformInterpolation(RealTransform transform, int interpolation) {
+		version = Warpy.version;
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
 

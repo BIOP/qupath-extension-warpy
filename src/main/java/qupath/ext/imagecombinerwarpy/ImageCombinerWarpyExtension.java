@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 
+import qupath.ext.biop.warpy.Warpy;
 import qupath.ext.imagecombinerwarpy.gui.*;
 import qupath.lib.common.Version;
 import qupath.lib.gui.ActionTools;
@@ -149,10 +150,14 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 	public GitHubRepo getRepository() {
 		return GitHubRepo.create(getName(), "qupath", "qupath-extension-imagecombinerwarpy");
 	}
-	
+
 	@Override
 	public Version getQuPathVersion() {
 		return Version.parse("0.3.1");
 	}
-	
+
+	@Override
+	public Version getVersion() {
+		return Version.parse(Warpy.version);
+	}
 }

@@ -44,6 +44,6 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
 
     @Override
     public Version getVersion() {
-        return Version.parse("0.2.0-SNAPSHOT");
+        return Version.parse(Warpy.version);
     }
 }
