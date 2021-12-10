@@ -1,40 +1,34 @@
 package net.imglib2.realtransform;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
 
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qupath.ext.imagecombinerwarpy.gui.RealTransformAndInterpolation;
+import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
 import qupath.lib.io.GsonTools;
 
-import java.io.FileReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
-
 /**
- * Duplication of the real transform serialisation already used in
- * bigdataviewer-playground - copied again to avoid to import too many dependencies
- * 
- * 
+ * Imglib2 Real transforms adapters already used in bigdataviewer-playground
+ * copied again to avoid to import too many dependencies
  * //::dip
- * Note: This file comes from RealTransformDeSerializer.java (BIOP Tools Extension, EPFL, CH) 
- * and was added to this project and modified for usage with the ImageCombinerWarpy (ICW) by @phaub (Oct 2021).
+ * {@link RealTransformInterpolationAdapter} for usage with the ImageCombinerWarpy (ICW)
  *
+ * @author Nicolas Chiaruttini, EPFL, 2021
+ * @author Peter Haub, ::dip, 2021
  */
 
 public class RealTransformSerializer {
 
     private static Logger logger = LoggerFactory.getLogger(RealTransformSerializer.class);
 
-
     public static void addRealTransformAdapters(GsonBuilder builder) {
-        GsonTools.SubTypeAdapterFactory<RealTransform> factoryRealTransform = GsonTools.createSubTypeAdapterFactory(RealTransform.class, "type");//, RealTransform.class.getSimpleName());
-
+        GsonTools.SubTypeAdapterFactory<RealTransform> factoryRealTransform = GsonTools.createSubTypeAdapterFactory(RealTransform.class, "type");
         factoryRealTransform.registerSubtype(ThinplateSplineTransform.class);
         factoryRealTransform.registerSubtype(Wrapped2DTransformAs3D.class);
         factoryRealTransform.registerSubtype(WrappedIterativeInvertibleRealTransform.class);
@@ -51,7 +45,6 @@ public class RealTransformSerializer {
         builder.registerTypeHierarchyAdapter(InvertibleRealTransformSequence.class, new InvertibleRealTransformSequenceAdapter());
         builder.registerTypeHierarchyAdapter(BoundedRealTransform.class, new BoundedRealTransformAdapter());
         builder.registerTypeHierarchyAdapter(AffineTransform3D.class, new AffineTransform3DAdapter());
-
     }
 
     public static Gson getRealTransformAdapter() {
@@ -61,14 +54,14 @@ public class RealTransformSerializer {
     }
     
     //::dip
-    public static class RealTransformAndInterpolationAdapter implements JsonSerializer<RealTransformAndInterpolation>,
-    JsonDeserializer<RealTransformAndInterpolation> {
+    public static class RealTransformInterpolationAdapter implements JsonSerializer<RealTransformInterpolation>,
+    JsonDeserializer<RealTransformInterpolation> {
 
 		@Override
-		public RealTransformAndInterpolation deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+		public RealTransformInterpolation deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
 		    JsonObject obj = jsonElement.getAsJsonObject();
 		    int interpolation = obj.get("interpolation").getAsInt();
-		    RealTransformAndInterpolation rtis = new RealTransformAndInterpolation();
+		    RealTransformInterpolation rtis = new RealTransformInterpolation();
 		    rtis.setInterpolation(interpolation);
             RealTransform transform = RealTransformSerializer.getRealTransformAdapter().fromJson(obj.get("transform"), RealTransform.class);
             rtis.setTransform(transform);
@@ -76,7 +69,7 @@ public class RealTransformSerializer {
 		}
 		
 		@Override
-		public JsonElement serialize(RealTransformAndInterpolation rtis, Type type, JsonSerializationContext jsonSerializationContext) {
+		public JsonElement serialize(RealTransformInterpolation rtis, Type type, JsonSerializationContext jsonSerializationContext) {
 		    JsonObject obj = new JsonObject();
             obj.addProperty("interpolation", rtis.getInterpolation());
             obj.add("transform", jsonSerializationContext.serialize(rtis.getTransform(), RealTransform.class));

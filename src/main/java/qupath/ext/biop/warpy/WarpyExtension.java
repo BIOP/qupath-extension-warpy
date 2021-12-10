@@ -12,11 +12,10 @@ import qupath.lib.gui.extensions.QuPathExtension;
  * <p>
  * Installs Warpy into QuPath, adding some metadata and adds the necessary global variables to QuPath's Preferences
  *
- * @author Nicolas Chiaruttini
+ * @author Nicolas Chiaruttini, EPFL, 2021
  */
 public class WarpyExtension implements QuPathExtension, GitHubProject {
-    private final static Logger logger = LoggerFactory.getLogger(qupath.ext.biop.warpy.WarpyExtension.class);
-
+    private final static Logger logger = LoggerFactory.getLogger(WarpyExtension.class);
 
     @Override
     public GitHubRepo getRepository() {
@@ -45,6 +44,6 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
 
     @Override
     public Version getVersion() {
-        return Version.parse("0.1.1-SNAPSHOT");
+        return Version.parse("0.2.0-SNAPSHOT");
     }
 }

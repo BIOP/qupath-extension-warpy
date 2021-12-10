@@ -12,12 +12,11 @@
  * 
  *********************************/
 
-
 package qupath.ext.imagecombinerwarpy.gui;
 
 import net.imglib2.realtransform.RealTransform;
 
-public class RealTransformAndInterpolation {
+public class RealTransformInterpolation {
 
 	transient public static final int[] interpolationsModes = InterpolationModes.getOrdinalNumbers();
 	transient public static final String[] interpolationsModeNames = InterpolationModes.getInterpolationTypeName();
@@ -26,18 +25,18 @@ public class RealTransformAndInterpolation {
 	
 	private RealTransform transform;
 	
-	public RealTransformAndInterpolation() {
+	public RealTransformInterpolation() {
 
 	}
 	
-	public RealTransformAndInterpolation(RealTransformAndInterpolation transformInterpolateSequence) {
+	public RealTransformInterpolation(RealTransformInterpolation transformInterpolateSequence) {
 		int interpolation = transformInterpolateSequence.getInterpolation();
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
 		this.transform = transformInterpolateSequence.getTransform();
 	}
 
-	public RealTransformAndInterpolation(RealTransform transform, int interpolation) {
+	public RealTransformInterpolation(RealTransform transform, int interpolation) {
 		if (isValidInterpolation(interpolation))
 			this.interpolation = interpolation;
 

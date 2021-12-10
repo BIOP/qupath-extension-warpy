@@ -37,7 +37,6 @@
  * 
  *********************************/
 
-
 package qupath.ext.imagecombinerwarpy.gui;
 
 import java.awt.Polygon;
@@ -77,7 +76,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private ImageServerMetadata metadata;
 	
 	private transient ImageRegion region;
-	private RealTransformAndInterpolation rtis;
+	private RealTransformInterpolation rtis;
 	private RealTransform realtransform;
 	private RealTransform realtransformInverse;
 	
@@ -87,7 +86,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private double[] dsLevels;
 	
 	
-	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformAndInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
+	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
 		super(server);
 		
 		logger.trace("Creating server for {} and Real transform {}", server, rtis);
@@ -101,7 +100,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 			this.realtransformInverse = ((InvertibleRealTransform) realtransform).inverse();
 		}
 		else {
-			throw new NoninvertibleTransformException("realtransform not invertable");
+			throw new NoninvertibleTransformException("realtransform not invertible");
 		}
 
 		double[][] bounds = new double[4][3];
@@ -234,24 +233,6 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	protected String createID() {
 		return getClass().getName() + ": + " + getWrappedServer().getPath() + " " + "realtransform"; //GsonTools.getInstance().toJson(realtransform, realtransform.getClass()); 
 	}
-	
-	/*
-	private static Rotation getRotation(ImageServer<BufferedImage> server, Rotation rotation) {
-		if (server instanceof RotatedImageServer) {
-			rotation = ((RotatedImageServer)server).getRotation();
-			return rotation;
-		}
-		else if (server instanceof TransformingImageServer){
-			ImageServer<BufferedImage> serverTmp = null;
-			serverTmp = ((TransformingImageServer<BufferedImage>) server).getWrappedServer();
-			return getRotation(serverTmp, rotation);
-		}
-		else if (server == null)
-			return null;
-		
-		return rotation;
-	}
-	*/
 
 	private static double getBestDownsample(double[] dsLevels, double ds) {
 		if (ds >= dsLevels[dsLevels.length-1])
@@ -496,15 +477,13 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		*/
 		return new BufferedImage(img.getColorModel(), raster, img.isAlphaPremultiplied(), null);
 	}
-	
-	
-	
+
 	/**
 	 * Get the affine transform for this server.
 	 * @return
 	 */
-	public RealTransformAndInterpolation getTransform() {
-		return new RealTransformAndInterpolation(rtis);
+	public RealTransformInterpolation getTransform() {
+		return new RealTransformInterpolation(rtis);
 	}
 	 	
 	@Override

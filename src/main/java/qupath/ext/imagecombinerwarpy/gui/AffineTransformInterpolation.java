@@ -14,7 +14,6 @@
 
 package qupath.ext.imagecombinerwarpy.gui;
 
-
 import java.awt.geom.AffineTransform;
 
 public class AffineTransformInterpolation {
@@ -24,7 +23,7 @@ public class AffineTransformInterpolation {
 	
 	private int interpolation = 0;
 	
-	private AffineTransform transform = null;
+	private AffineTransform transform;
 	
 	public AffineTransformInterpolation(AffineTransformInterpolation transforminterpolate) {
 		int interpolation = transforminterpolate.getInterpolation();

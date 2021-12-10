@@ -31,8 +31,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -110,7 +108,6 @@ import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.TransformChangedEvent;
 import javafx.stage.Stage;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformSerializer;
 import qupath.ext.biop.warpy.Warpy;
 import qupath.ext.imagecombinerwarpy.gui.InterpolationModes.InterpolationType;
 import qupath.lib.color.ColorDeconvolutionStains;
@@ -157,7 +154,7 @@ import qupath.opencv.tools.OpenCVTools;
  * 
  * .. a QuPath extension based on the QuPath 'Interactive Image Alignment' tool
  *  
- * The ImageCombinerWarpy is thought as an experimental� tool.
+ * The ImageCombinerWarpy is thought as an experimental tool.
  * 
  * It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -187,7 +184,7 @@ public class ImageCombinerWarpyPane {
 
 	private StringProperty affineStringProperty;
 	
-	private static enum RegistrationType {
+	private enum RegistrationType {
 		AFFINE, RIGID;
 
 		@Override
@@ -203,9 +200,8 @@ public class ImageCombinerWarpyPane {
 	}
 	
 	private ObjectProperty<RegistrationType> registrationType = new SimpleObjectProperty<>(RegistrationType.AFFINE);
-	
-	
-	private static enum AlignmentMethod {
+
+	private enum AlignmentMethod {
 			INTENSITY, AREA_ANNOTATIONS, POINT_ANNOTATIONS;
 		
 		@Override
@@ -224,10 +220,8 @@ public class ImageCombinerWarpyPane {
 	
 	private ObjectProperty<AlignmentMethod> alignmentMethod = new SimpleObjectProperty<>(AlignmentMethod.INTENSITY);
 
-	
 	private ObjectProperty<InterpolationType> interpolationType = new SimpleObjectProperty<>(InterpolationType.NEARESTNEIGHBOR);
-	
-	
+
 	private Map<ImageData<BufferedImage>, ImageCombinerWarpyServerOverlay> mapOverlays = new WeakHashMap<>();
 	private EventHandler<TransformChangedEvent> transformEventHandler = new EventHandler<TransformChangedEvent>() {
 		@Override
@@ -640,7 +634,6 @@ public class ImageCombinerWarpyPane {
 		
 	}
 
-
 	void addProjectEntry(boolean useWarpyTransformation) {
 		String msg = "Add combined image to project (Affine Transformation with Interpolation)?";
 		if ( useWarpyTransformation )
@@ -938,7 +931,7 @@ public class ImageCombinerWarpyPane {
 					}
 									
 					int interpolationMode = interpolationType.get().ordinal();
-					RealTransformAndInterpolation realtransformsequence = new RealTransformAndInterpolation(realtransform, interpolationMode);
+					RealTransformInterpolation realtransformsequence = new RealTransformInterpolation(realtransform, interpolationMode);
 					try {
 						transformServerTmp = new RealTransformImageServer(serverTmp, realtransformsequence, interpolationMode);
 					} catch (NoninvertibleTransformException e) {
@@ -977,7 +970,7 @@ public class ImageCombinerWarpyPane {
 
 		// End: Create transformed overlay images servers
 
-		System.out.println("n channels: " + channels.size());
+		//System.out.println("n channels: " + channels.size());
 
 		// Combine base image and transformed overlay images (Create combined/concatenated server)
 		
@@ -1055,8 +1048,7 @@ public class ImageCombinerWarpyPane {
 			logger.error("Error parsing transform: " + e.getLocalizedMessage(), e);
 		}
 	}
-	
-		
+
 	void promptToAddImages() {
 		// Get all the other project entries - except for the base image (which is fixed)
 		Project<BufferedImage> project = qupath.getProject();
@@ -1171,8 +1163,7 @@ public class ImageCombinerWarpyPane {
 		getDisplaysList();
 		getWarpyInfoList();
 	}
-	
-	
+
 	private void getDisplaysList() {
 		initDislayList();
 
@@ -1270,9 +1261,7 @@ public class ImageCombinerWarpyPane {
 		}
 		return allWarpyFilesExist;
 	}
-	
-	
-	
+
 	private ImageCombinerWarpyServerOverlay getSelectedOverlay() {
 		return mapOverlays.get(selectedImageData.get());
 	}
@@ -1292,9 +1281,7 @@ public class ImageCombinerWarpyPane {
 				affine.getMyx(), affine.getMyy(), affine.getTy())
 				);
 	}
-	
-	
-	
+
 	/**
 	 * Ensure an image is 8-bit grayscale, creating a new image if necessary.
 	 * 
@@ -1562,8 +1549,6 @@ public class ImageCombinerWarpyPane {
 			);
 		indexer.release();
 	}
-	
-	
 
 	void requestShift(double dx, double dy) {
 		ImageCombinerWarpyServerOverlay overlay = mapOverlays.get(selectedImageData.get());
@@ -1608,9 +1593,7 @@ public class ImageCombinerWarpyPane {
 	static void requestScaling(QuPathViewer viewer, Affine affine, double scale) {
 		affine.appendScale(scale, scale);
 	}
-	
-	
-	
+
 	/**
 	 * An event handler to enable interactively adjusting overlay transforms.
 	 */
@@ -1642,9 +1625,7 @@ public class ImageCombinerWarpyPane {
 			}
 		}
 	}
-	
-	
-	
+
 	/**
 	 * ListCell for displaying image overlays.
 	 */

@@ -100,7 +100,7 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 
 			builder.registerTypeAdapter(AffineTransformInterpolationTypeAdapter.class, new AffineTransformInterpolationTypeAdapter());
 			RealTransformSerializer.addRealTransformAdapters(builder);
-			builder.registerTypeAdapter(RealTransformAndInterpolation.class, new RealTransformSerializer.RealTransformAndInterpolationAdapter());
+			builder.registerTypeAdapter(RealTransformInterpolation.class, new RealTransformSerializer.RealTransformInterpolationAdapter());
 
 			// Add ImageCombinerWarpy
 	    	qupath.installActions(ActionTools.getAnnotatedActions(new ExperimentalCommands(qupath)));

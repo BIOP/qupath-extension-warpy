@@ -12,16 +12,13 @@
  * 
  *********************************/
 
-
 package qupath.ext.imagecombinerwarpy.gui;
-
 
 public class InterpolationModes {
 
-	public static enum InterpolationType {
+	public enum InterpolationType {
 		NEARESTNEIGHBOR, BILINEAR, BICUBIC, CATMULLROM, MITCHELLNETRAVALI, CUBICBSPLINE;
 
-		
 		@Override
 		public String toString() {
 			switch(this) {

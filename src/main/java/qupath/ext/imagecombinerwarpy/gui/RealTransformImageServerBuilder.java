@@ -12,7 +12,6 @@
  * 
  *********************************/
 
-
 package qupath.ext.imagecombinerwarpy.gui;
 
 import java.awt.image.BufferedImage;
@@ -20,7 +19,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
-import net.imglib2.realtransform.RealTransform;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.ImageServerBuilder.ServerBuilder;
@@ -32,12 +30,9 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 	
 	private ServerBuilder<BufferedImage> builder;
 
-	//private RealTransform realtransform;
+	private RealTransformInterpolation realtransforminterpolation;
 
-	private RealTransformAndInterpolation realtransforminterpolation;
-	
-	//RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransform realtransform) {
-	RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransformAndInterpolation realtransforminterpolation) {
+	RealTransformImageServerBuilder(ImageServerMetadata metadata, ServerBuilder<BufferedImage> builder, RealTransformInterpolation realtransforminterpolation) {
 		//super(metadata);
 		this.metadata = metadata;
 		this.builder = builder;
@@ -76,6 +71,5 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 			return this;
 		return new RealTransformImageServerBuilder(getMetadata(), newBuilder, realtransforminterpolation);
 	}
-
 
 }

@@ -4,6 +4,11 @@ import net.imglib2.RealInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
 
+/**
+ * RealTransform object limiting the extend of the transformation computation.
+ *
+ * Used in BigDataViewer to speed up display
+ */
 public class BoundedRealTransform implements InvertibleRealTransform {
 
     final InvertibleRealTransform origin;
