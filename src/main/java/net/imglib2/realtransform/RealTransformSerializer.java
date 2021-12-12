@@ -313,14 +313,9 @@ public class RealTransformSerializer {
 
     /**
      * Fix RealTransform serialization where type:"AffineTransform3D" has been missing
-     */
-    /**
-     * In the previous ABBA version, CreateSliceAction was named CreateSlice, etc.
-     * All these need to be changed before being open.
-     *
      * Function is there for legacy reasons.
      * @param element
-     * @return
+     * @return a converted serialized tree where the affinetransform3d serialization has been fixed
      */
     public static JsonElement fixAffineTransform(JsonElement element) {
         if (element.isJsonObject()) {
