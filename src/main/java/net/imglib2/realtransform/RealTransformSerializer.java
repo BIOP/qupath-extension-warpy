@@ -310,4 +310,39 @@ public class RealTransformSerializer {
         }
     }
 
+
+    /**
+     * Fix RealTransform serialization where type:"AffineTransform3D" has been missing
+     */
+    /**
+     * In the previous ABBA version, CreateSliceAction was named CreateSlice, etc.
+     * All these need to be changed before being open.
+     *
+     * Function is there for legacy reasons.
+     * @param element
+     * @return
+     */
+    public static JsonElement fixAffineTransform(JsonElement element) {
+        if (element.isJsonObject()) {
+            JsonObject object  = (JsonObject) element;
+            object.entrySet().forEach(e -> {
+                if (e.getKey().equals("affinetransform3d")) {
+                    if (!object.keySet().contains("type")) { // If type is missing
+                        object.addProperty("type", "AffineTransform3D"); // Let's add it!
+                    }
+                } else {
+                    e.setValue(fixAffineTransform(e.getValue()));
+                }
+            });
+        } else if (element.isJsonArray()) {
+            JsonArray array = (JsonArray) element;
+            JsonArray converted = new JsonArray();
+            for (JsonElement e : array) {
+                converted.add(fixAffineTransform(e));
+            }
+            element = converted;
+        }
+        return element;
+    }
+
 }

@@ -1,5 +1,7 @@
 package qupath.ext.biop.warpy;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.RealTransform;
@@ -362,8 +364,10 @@ public class Warpy {
         FileReader fileReader;
         try {
             fileReader = new FileReader(f.getAbsolutePath());
-            RealTransform rt = RealTransformSerializer.getRealTransformAdapter().fromJson(fileReader, RealTransform.class);
+            JsonObject element = new Gson().fromJson(fileReader, JsonObject.class);
             fileReader.close();
+            element = (JsonObject) RealTransformSerializer.fixAffineTransform(element); // Fix missing type element in old versions
+            RealTransform rt = RealTransformSerializer.getRealTransformAdapter().fromJson(element, RealTransform.class);
             return rt;
         } catch (FileNotFoundException e) {
             logger.error("Transform file " + f.getName() + " not found", e);
