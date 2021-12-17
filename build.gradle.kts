@@ -31,7 +31,7 @@ dependencies {
     shadow("io.github.qupath:qupath-gui-fx:$qupathVersion")
     shadow("org.slf4j:slf4j-api:1.7.30")
     implementation("commons-io:commons-io:2.11.0")
-    implementation("net.imglib2:imglib2-realtransform:3.1.1")
+    implementation("net.imglib2:imglib2-realtransform:3.1.2")
 
     testImplementation("io.github.qupath:qupath-gui-fx:$qupathVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
