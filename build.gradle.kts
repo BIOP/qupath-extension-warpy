@@ -87,7 +87,7 @@ java {
 tasks.test { useJUnitPlatform() }
 
 // Skip fat jar publication
-components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements.get()) { skip() }
+// components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements.get()) { skip() }
 
 publishing {
     publications.create<MavenPublication>("maven") {
