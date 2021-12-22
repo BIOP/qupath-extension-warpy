@@ -100,6 +100,10 @@ publishing {
             url = if (version.toString().endsWith("SNAPSHOT"))
                  uri("https://maven.scijava.org/content/repositories/snapshots")
             else uri("https://maven.scijava.org/content/repositories/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
         }
     }
 }
