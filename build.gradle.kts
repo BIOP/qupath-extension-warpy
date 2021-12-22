@@ -97,7 +97,9 @@ publishing {
         maven {
             name = "scijava"
             //credentials(PasswordCredentials::class)
-            url = uri("https://maven.scijava.org/content/repositories/releases")
+            url = if (version.toString().endsWith("SNAPSHOT"))
+                 uri("https://maven.scijava.org/content/repositories/snapshots")
+            else uri("https://maven.scijava.org/content/repositories/releases")
         }
     }
 }
