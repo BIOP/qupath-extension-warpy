@@ -101,8 +101,8 @@ publishing {
                  uri("https://maven.scijava.org/content/repositories/snapshots")
             else uri("https://maven.scijava.org/content/repositories/releases")
             credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
+                username = System.getenv("MAVEN_USER")
+                password = System.getenv("MAVEN_PASS")
             }
         }
     }
