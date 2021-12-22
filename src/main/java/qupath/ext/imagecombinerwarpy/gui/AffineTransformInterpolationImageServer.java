@@ -24,7 +24,7 @@
  * 
  * .. a QuPath extension based on the QuPath 'Interactive Image Alignment' tool
  *  
- * The ImageCombinerWarpy is thought as an experimental² tool.
+ * The ImageCombinerWarpy is thought as an experimental tool.
  * 
  * It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
