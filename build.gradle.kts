@@ -98,8 +98,8 @@ publishing {
             name = "scijava"
             //credentials(PasswordCredentials::class)
             url = if (version.toString().endsWith("SNAPSHOT"))
-                 uri("https://maven.scijava.org/content/repositories/snapshots")
-            else uri("https://maven.scijava.org/content/repositories/releases")
+                 uri("dav:https://maven.scijava.org/content/repositories/snapshots")
+            else uri("dav:https://maven.scijava.org/content/repositories/releases")
         }
     }
 }
