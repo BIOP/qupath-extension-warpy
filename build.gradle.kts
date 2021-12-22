@@ -1,7 +1,7 @@
 plugins {
     `java-library`
     // To create a shadow/fat jar, including dependencies
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    // id("com.github.johnrengelman.shadow") version "7.0.0"
     // To manage included native libraries
     //  id 'org.bytedeco.gradle-javacpp-platform' version '1.5.6'
     `maven-publish`
