@@ -28,8 +28,11 @@ version = "0.2.2-SNAPSHOT"
 dependencies {
     val qupathVersion = "0.3.0" // For now
 
-    shadow("io.github.qupath:qupath-gui-fx:$qupathVersion")
-    shadow("org.slf4j:slf4j-api:1.7.30")
+    //shadow("io.github.qupath:qupath-gui-fx:$qupathVersion")
+    //shadow("org.slf4j:slf4j-api:1.7.30")
+
+    implementation("io.github.qupath:qupath-gui-fx:$qupathVersion")
+    implementation("org.slf4j:slf4j-api:1.7.30")
     implementation("commons-io:commons-io:2.11.0")
     implementation("net.imglib2:imglib2-realtransform:3.1.2")
 
