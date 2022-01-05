@@ -13,7 +13,7 @@ You might then need to restart QuPath (but not your computer).
 
 ## Citing
 
-TODO
+https://doi.org/10.3389/fcomp.2021.780026
 
 ## Building
 
