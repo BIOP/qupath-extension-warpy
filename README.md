@@ -2,6 +2,10 @@
 
 This repo adds some support for non linear deformation and registration in QuPath, by using the [ImgLib2](https://github.com/imglib/imglib2) library.
 
+## Documentation
+
+[https://imagej.net/plugins/bdv/warpy/warpy](https://imagej.net/plugins/bdv/warpy/warpy)
+
 ## Installing
 
 Download the latest `qupath-extension-warpy-[version].zip` file from [releases](https://github.com/biop/qupath-extension-warpy/releases). Unzip it, then and drag its contained files onto the main QuPath window.
