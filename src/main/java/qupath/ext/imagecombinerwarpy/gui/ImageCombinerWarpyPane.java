@@ -1444,8 +1444,8 @@ public class ImageCombinerWarpyPane {
 			downsample = requestedPixelSizeMicrons / calBase.getAveragedPixelSizeMicrons();			
 		}
 
-		BufferedImage imgBase = serverBase.readBufferedImage(RegionRequest.createInstance(serverBase.getPath(), downsample, 0, 0, serverBase.getWidth(), serverBase.getHeight()));
-		BufferedImage imgOverlay = serverOverlay.readBufferedImage(RegionRequest.createInstance(serverOverlay.getPath(), downsample, 0, 0, serverOverlay.getWidth(), serverOverlay.getHeight()));
+		BufferedImage imgBase = serverBase.readRegion(RegionRequest.createInstance(serverBase.getPath(), downsample, 0, 0, serverBase.getWidth(), serverBase.getHeight()));
+		BufferedImage imgOverlay = serverOverlay.readRegion(RegionRequest.createInstance(serverOverlay.getPath(), downsample, 0, 0, serverOverlay.getWidth(), serverOverlay.getHeight()));
 		
 		//::dip
 		if (viewerTmp != null)
