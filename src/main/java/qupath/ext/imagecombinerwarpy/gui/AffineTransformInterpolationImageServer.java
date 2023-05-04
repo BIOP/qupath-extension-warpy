@@ -274,7 +274,7 @@ public class AffineTransformInterpolationImageServer extends TransformingImageSe
 	
 	
 	@Override
-	public BufferedImage readBufferedImage(final RegionRequest request) throws IOException {
+	public BufferedImage readRegion(RegionRequest request) throws IOException {
 
 		double downsample = request.getDownsample();
 		
@@ -311,7 +311,7 @@ public class AffineTransformInterpolationImageServer extends TransformingImageSe
 				request.getT()
 				);
 			
-		BufferedImage img = getWrappedServer().readBufferedImage(requestTR);
+		BufferedImage img = getWrappedServer().readRegion(requestTR);
 		if (img == null)
 			return img;
 		
