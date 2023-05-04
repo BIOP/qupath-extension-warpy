@@ -249,7 +249,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	
 	
 	@Override
-	public BufferedImage readBufferedImage(final RegionRequest request) throws IOException {
+	public BufferedImage readRegion(RegionRequest request) throws IOException {
 
 		RealTransform transform2 = realtransform.copy();
 
@@ -293,7 +293,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 				);
 		
 		// Source
-		BufferedImage img = getWrappedServer().readBufferedImage(requestTR);
+		BufferedImage img = getWrappedServer().readRegion(requestTR);
 		if (img == null)
 			return img;
 

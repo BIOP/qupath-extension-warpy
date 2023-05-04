@@ -23,10 +23,10 @@ description = "QuPath extension to use Warpy"
 
 group = "ch.epfl.biop"
 // artifact = "qupath-extension-warpy"
-version = "0.2.3-SNAPSHOT"
+version = "0.2.4-SNAPSHOT"
 
 dependencies {
-    val qupathVersion = "0.3.0" // For now
+    val qupathVersion = "0.4.3" // For now
 
     //shadow("io.github.qupath:qupath-gui-fx:$qupathVersion")
     //shadow("org.slf4j:slf4j-api:1.7.30")
