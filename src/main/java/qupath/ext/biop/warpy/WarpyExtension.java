@@ -2,6 +2,7 @@ package qupath.ext.biop.warpy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qupath.lib.common.GeneralTools;
 import qupath.lib.common.Version;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.extensions.GitHubProject;
@@ -42,8 +43,8 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
         return QuPathExtension.super.getQuPathVersion();
     }
 
-    @Override
-    public Version getVersion() {
-        return Version.parse(Warpy.version);
+    public static String getWarpyVersion() {
+        String packageVersion = GeneralTools.getPackageVersion(WarpyExtension.class);
+        return Version.parse(packageVersion).toString();
     }
 }

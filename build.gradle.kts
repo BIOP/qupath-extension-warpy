@@ -1,3 +1,6 @@
+import java.util.Date
+import java.text.SimpleDateFormat
+
 plugins {
     `java-library`
     // To create a shadow/fat jar, including dependencies
@@ -23,7 +26,7 @@ description = "QuPath extension to use Warpy"
 
 group = "ch.epfl.biop"
 // artifact = "qupath-extension-warpy"
-version = "0.2.5-SNAPSHOT"
+version = "0.2.5"
 
 dependencies {
     val qupathVersion = "0.4.3" // For now
@@ -109,6 +112,15 @@ publishing {
             }
         }
     }
+}
+
+tasks.jar {
+    // Important to set version so this can be queried within QuPath
+    manifest {
+        attributes[ "Implementation-Vendor" ] = "Warpy developers"
+        attributes[ "Implementation-Version" ] = project.version
+        attributes[ "QuPath-build-time" ] = SimpleDateFormat("yyyy-MM-dd, HH:mm").format(Date())
+      }
 }
 
 val SoftwareComponentContainer.java
