@@ -12,6 +12,8 @@ import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qupath.lib.analysis.features.ObjectMeasurements;
+import qupath.lib.common.GeneralTools;
+import qupath.lib.common.Version;
 import qupath.lib.gui.QuPathApp;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
@@ -59,7 +61,7 @@ import static qupath.lib.scripting.QP.*;
 
 public class Warpy {
 
-    final static public String version = "0.2.3-SNAPSHOT";
+    final static public String version = "0.2.4"; // Version.parse(GeneralTools.getPackageVersion(Warpy.class)).toString();
 
     // Logger class that plays well with QuPath
     final private static Logger logger = LoggerFactory.getLogger(Warpy.class);
