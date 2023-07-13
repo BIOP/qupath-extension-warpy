@@ -8,6 +8,7 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qupath.ext.biop.warpy.Warpy;
+import qupath.ext.biop.warpy.WarpyExtension;
 import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
 import qupath.lib.io.GsonTools;
 
@@ -66,8 +67,8 @@ public class RealTransformSerializer {
 		    rtis.setInterpolation(interpolation);
             String version = obj.get("version").getAsString();
             rtis.setVersion(version);
-            if (!version.equals(Warpy.version)) {
-                logger.warn("Warpy version "+Warpy.version+" different from ImageServer "+version);
+            if (!version.equals(WarpyExtension.getWarpyVersion())) {
+                logger.warn("Warpy version "+WarpyExtension.getWarpyVersion()+" different from ImageServer "+version);
             }
             RealTransform transform = RealTransformSerializer.getRealTransformAdapter().fromJson(obj.get("transform"), RealTransform.class);
             rtis.setTransform(transform);
