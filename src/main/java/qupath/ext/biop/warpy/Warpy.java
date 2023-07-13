@@ -16,9 +16,11 @@ import qupath.lib.gui.QuPathApp;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.objects.*;
+import qupath.lib.objects.hierarchy.TMAGrid;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.roi.GeometryTools;
+import qupath.lib.roi.ROIs;
 import qupath.lib.roi.interfaces.ROI;
 import qupath.lib.scripting.QP;
 
@@ -32,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static qupath.lib.scripting.QP.*;
 
@@ -136,11 +140,64 @@ public class Warpy {
      */
     public static Collection<PathObject> getPathObjectsFromEntry(ProjectImageEntry sourceEntry) {
         try {
-            return sourceEntry.readHierarchy().getRootObject().getChildObjects();
+            // Do not return the TMA cores
+            return sourceEntry.readHierarchy().getRootObject().getChildObjects().stream().filter(Predicate.not(PathObject::isTMACore)).collect(Collectors.toList());
         } catch (IOException e) {
             logger.error("Error reading hierarchy from " + sourceEntry.getImageName(), e);
         }
         return null;
+    }
+
+    public static TMAGrid getTMAGridFromEntry(ProjectImageEntry sourceEntry) {
+        try {
+            return sourceEntry.readHierarchy().getTMAGrid();
+        } catch (IOException e) {
+            logger.error("Error reading TMA grid from " + sourceEntry.getImageName(), e);
+        }
+        return null;
+    }
+
+    /**
+     * Transfer the TMA grid from one entry to another
+     *
+     */
+    public static TMAGrid transferTMAGrid(TMAGrid originalGrid, RealTransform transform) {
+        CoordinateSequenceFilter transformer = getJTSFilter(transform);
+
+
+        // The TMA grid will be modified in place and all its objects will be modified
+        originalGrid.getTMACoreList().forEach(core -> {
+
+            // For the core, build a new ellipse based on the bounds of the transformed original ellipse
+            ROI original_roi = core.getROI();
+
+            Geometry geometry = original_roi.getGeometry();
+
+            GeometryTools.attemptOperation(geometry, (g) -> {
+                g.apply(transformer);
+                return g;
+            });
+
+            // Convert to a new ellipse
+            ROI transformed_roi = GeometryTools.geometryToROI(geometry, original_roi.getImagePlane());
+            ROI newEllipse = ROIs.createEllipseROI(transformed_roi.getBoundsX(), transformed_roi.getBoundsY(), transformed_roi.getBoundsWidth(), transformed_roi.getBoundsHeight(), original_roi.getImagePlane());
+
+            core.setROI(newEllipse);
+            // Now we need to add every object that is inside the TMA Grid
+            Collection<PathObject> allObjects = core.getChildObjects();
+
+            Collection<PathObject> newObjects = transformPathObjects(allObjects, transform);
+
+            // Remove all objects from the core
+            core.clearChildObjects();
+
+            // Re-add
+            core.addChildObjects(newObjects);
+
+        });
+
+        // This is the original grid, to avoid having to recreate everything...
+        return originalGrid;
     }
 
     /**
@@ -293,11 +350,15 @@ public class Warpy {
 
         PathObject transformedObject = transformPathObject(object, transform, checkGeometryValidity, copyMeasurements);
 
-        if (object.hasChildren()) {
+        if (object.hasChildObjects()) {
             for (PathObject child : object.getChildObjects()) {
-                transformedObject.addPathObject(transformPathObjectAndChildren(child, transform, checkGeometryValidity, copyMeasurements));
+                transformedObject.addChildObject(transformPathObjectAndChildren(child, transform, checkGeometryValidity, copyMeasurements));
             }
         }
+
+        // Re-add name if it exists
+        transformedObject.setName(object.getName());
+
         return transformedObject;
     }
 
