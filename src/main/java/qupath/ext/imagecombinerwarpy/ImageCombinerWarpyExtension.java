@@ -153,11 +153,7 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 
 	@Override
 	public Version getQuPathVersion() {
-		return Version.parse("0.3.1");
+		return QuPathExtension.super.getQuPathVersion();
 	}
 
-	@Override
-	public Version getVersion() {
-		return Version.parse(Warpy.version);
-	}
 }
