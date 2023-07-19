@@ -120,7 +120,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		}		
 		Rectangle2D boundsTransformed = (new Polygon(polyX, polyY, 4)).getBounds2D();
 				
-		double lOrig = Math.sqrt(server.getWidth()*server.getWidth() + server.getHeight()*server.getHeight());
+		double lOrig = Math.sqrt((double)(server.getWidth())*(double)(server.getWidth()) + (double)(server.getHeight())*(double)(server.getHeight()));
 		double lRT = Math.sqrt((boundsTR[3][0]-boundsTR[0][0])*(boundsTR[3][0]-boundsTR[0][0]) + (boundsTR[3][1]-boundsTR[0][1])*(boundsTR[3][1]-boundsTR[0][1]));
 		double scale = lRT / lOrig;
 
@@ -164,7 +164,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 				
 		metadata = builder.build();
 		
-		globalScale = scale;		
+		globalScale = scale;
 		dsLevels = server.getPreferredDownsamples();
 	}
 	
