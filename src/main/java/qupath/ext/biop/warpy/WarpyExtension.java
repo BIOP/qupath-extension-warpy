@@ -26,8 +26,8 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
     private boolean isInstalled = false;
 
     private static final Map<String, String> SCRIPTS = Map.of(
-            "Warpy transfer annotations and detections to current entry script template", "scripts/Warpy_transfer_annotations_and_detections_to_current_entry.groovy",
-            "Warpy transfer TMAs to current entry script template", "scripts/Warpy_transfer_TMA_to_current_entry.groovy"
+            "Warpy transfer annotations and detections to current entry", "scripts/Warpy_transfer_annotations_and_detections_to_current_entry.groovy",
+            "Warpy transfer TMAs to current entry", "scripts/Warpy_transfer_TMA_to_current_entry.groovy"
     );
 
     @Override
