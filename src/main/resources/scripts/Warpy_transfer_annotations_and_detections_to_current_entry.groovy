@@ -10,8 +10,8 @@
  *
  * This script then transfer all objects from the moving to the fixed image (or vice versa)
  *
- * Support for annotations, detections cells and TMAs
- * Note that TMAs and all child objects are
+ * Support for annotations, detections, cells. TMAs are handled separately, see the appropriate script.
+
  * @author Nicolas Chiaruttini
  * @author Olivier Burri
  *
@@ -26,6 +26,10 @@ def targetEntry = getProjectEntry()
 // Locate candidate entries can can be transformed into the source entry
 def sourceEntries = Warpy.getCandidateSourceEntries( targetEntry )
 
+// Warn in case multiple candidate entries
+if(sourceEntries.size() > 1) {
+    logger.warn( "Multiple candidate entries found, using the first one" )
+}
 // Choose one source or transfer from all of them with a for loop
 def sourceEntry = sourceEntries[0]
 
@@ -37,14 +41,20 @@ def transform = Warpy.getRealTransform( sourceEntry, targetEntry )
 def objectsToTransfer = Warpy.getPathObjectsFromEntry( sourceEntry )
 
 // Finally perform the transform of each PathObject
-def transferedObjects = Warpy.transformPathObjects(objectsToTransfer, transform)
+def transferredObjects = Warpy.transformPathObjects( objectsToTransfer, transform )
 
 // Convenience method to add intensity measurements. Does not have to do with transforms directly.
 // This packs the addIntensityMeasurements in such a way that it works for RGB and Fluoresence images
-Warpy.addIntensityMeasurements(transferedObjects, 1)
+def downsample = 1
+Warpy.addIntensityMeasurements(transferredObjects, downsample)
 
 // Finally, add the transformed objects to the current image and update the display
-addObjects(transferedObjects)
+addObjects(transferredObjects)
+
+// Make sure that we can see the new objects
+fireHierarchyUpdate()
+
+println "Warpy anotations and detections transfer script done"
 
 // Necessary import, requires qupath-extenstion-warpy, see: https://github.com/BIOP/qupath-extension-warpy
 import qupath.ext.biop.warpy.*
