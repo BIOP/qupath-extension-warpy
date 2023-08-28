@@ -26,7 +26,7 @@ description = "QuPath extension to use Warpy"
 
 group = "ch.epfl.biop"
 // artifact = "qupath-extension-warpy"
-version = "0.2.7"
+version = "0.2.8-SNAPSHOT"
 
 dependencies {
     val qupathVersion = "0.4.3" // For now
