@@ -110,7 +110,7 @@ public class AffineTransformInterpolationImageServer extends TransformingImageSe
 		
 		transform.transform(edges, 0, edgesTR, 0, 2);
 		
-		double lOrig = Math.sqrt(server.getWidth()*server.getWidth() + server.getHeight()*server.getHeight());
+		double lOrig = Math.sqrt((double)server.getWidth()*(double)server.getWidth() + (double)server.getHeight()*(double)server.getHeight());
 		double lRT = Math.sqrt((edgesTR[2]-edgesTR[0])*(edgesTR[2]-edgesTR[0]) 
 								+ (edgesTR[3]-edgesTR[1])*(edgesTR[3]-edgesTR[1]));
 		double scale = lRT / lOrig;
