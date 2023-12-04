@@ -7,8 +7,8 @@ import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qupath.ext.biop.warpy.Warpy;
-import qupath.ext.biop.warpy.WarpyExtension;
+import qupath.ext.warpy.Warpy;
+import qupath.ext.warpy.WarpyExtension;
 import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
 import qupath.lib.io.GsonTools;
 

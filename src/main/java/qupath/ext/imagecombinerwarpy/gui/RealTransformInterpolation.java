@@ -15,8 +15,7 @@
 package qupath.ext.imagecombinerwarpy.gui;
 
 import net.imglib2.realtransform.RealTransform;
-import qupath.ext.biop.warpy.Warpy;
-import qupath.ext.biop.warpy.WarpyExtension;
+import qupath.ext.warpy.WarpyExtension;
 
 public class RealTransformInterpolation {
 
