@@ -43,47 +43,37 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 
-import qupath.ext.biop.warpy.Warpy;
 import qupath.ext.imagecombinerwarpy.gui.*;
 import qupath.lib.common.Version;
-import qupath.lib.gui.ActionTools;
-import qupath.lib.gui.ActionTools.ActionDescription;
-import qupath.lib.gui.ActionTools.ActionMenu;
 import qupath.lib.gui.QuPathGUI;
+import qupath.lib.gui.actions.ActionTools;
 import qupath.lib.gui.extensions.GitHubProject;
 import qupath.lib.gui.extensions.QuPathExtension;
+import qupath.lib.gui.tools.MenuTools;
 import qupath.lib.images.servers.ImageServerBuilder.ServerBuilder;
 import qupath.lib.images.servers.ImageServers;
 import qupath.lib.io.GsonTools;
 import qupath.lib.io.GsonTools.SubTypeAdapterFactory;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 
 /**
  * Extension to make more experimental commands present in the GUI.
  */
 public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProject {
 	
-	private static Logger logger = LoggerFactory.getLogger(ImageCombinerWarpyExtension.class);
+	private static final Logger logger = LoggerFactory.getLogger(ImageCombinerWarpyExtension.class);
 	
 	private static boolean alreadyInstalled = false;
 	
-	private static Version minimumVersion = Version.parse("0.3.0-SNAPSHOT");
+	private static final Version minimumVersion = Version.parse("0.3.0-SNAPSHOT");
 
-	@SuppressWarnings("javadoc")
-	public class ExperimentalCommands {
-		
-		@ActionMenu("Analyze>Interactive image combiner warpy")
-		@ActionDescription("Experimental command to interactively align and combine images using an Affine or Warpy transform. "
-				+ "This is currently not terribly useful in itself, but may be helpful as part of more complex scripting workflows.")
-		public final Action actionInteractiveImageCombinerWarpy;
-
-		private ExperimentalCommands(QuPathGUI qupath) {
-			var interactiveImageCombinerWarpy = new InteractiveImageCombinerWarpyCommand(qupath);
-			actionInteractiveImageCombinerWarpy = qupath.createProjectAction(project -> interactiveImageCombinerWarpy.run());
-		}
-		
-	}
-	
-	
+	private static final LinkedHashMap<String, String> SCRIPTS = new LinkedHashMap<>() {{
+		put("Warpy transfer annotations and detections to current entry", "scripts/Warpy_transfer_annotations_and_detections_to_current_entry.groovy");
+		put("Warpy  transfer TMA to current entry", "scripts/Warpy_transfer_TMA_to_current_entry.groovy");
+	}};
     @Override
     public void installExtension(QuPathGUI qupath) {
     	if (alreadyInstalled || !checkCompatibility())
@@ -91,7 +81,6 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 		
 		try {			
 			
-			//RuntimeTypeAdapterFactory<ServerBuilder> typeAdapterFactory = (RuntimeTypeAdapterFactory<ServerBuilder>) ImageServers.getServerBuilderFactory();	        
 	        SubTypeAdapterFactory<ServerBuilder> typeAdapterFactory = (SubTypeAdapterFactory<ServerBuilder>) ImageServers.getServerBuilderFactory();
 	        		
 			typeAdapterFactory.registerSubtype(RealTransformImageServerBuilder.class, "realtransform");
@@ -104,8 +93,24 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 			builder.registerTypeAdapter(RealTransformInterpolation.class, new RealTransformSerializer.RealTransformInterpolationAdapter());
 
 			// Add ImageCombinerWarpy
-	    	qupath.installActions(ActionTools.getAnnotatedActions(new ExperimentalCommands(qupath)));
-	    	
+			var imageCombinerWarpy = ActionTools.createAction(new InteractiveImageCombinerWarpyCommand(qupath), "Interactive image combiner Warpy");
+			MenuTools.addMenuItems(qupath.getMenu("Analyze", false),
+			imageCombinerWarpy);
+
+			SCRIPTS.entrySet().forEach(entry -> {
+				String name = entry.getValue();
+				String command = entry.getKey();
+				try (InputStream stream = ImageCombinerWarpyExtension.class.getClassLoader().getResourceAsStream(name)) {
+					String script = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+					if (script != null) {
+						MenuTools.addMenuItems(
+								qupath.getMenu("Extensions>Cellpose", true),
+								new Action(command, e -> openScript(qupath, script)));
+					}
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			});
 	    	alreadyInstalled = true;
 			
 		} catch (Throwable t) {
@@ -154,6 +159,15 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 	@Override
 	public Version getQuPathVersion() {
 		return QuPathExtension.super.getQuPathVersion();
+	}
+
+	private static void openScript(QuPathGUI qupath, String script) {
+		var editor = qupath.getScriptEditor();
+		if (editor == null) {
+			logger.error("No script editor is available!");
+			return;
+		}
+		qupath.getScriptEditor().showScript("Cellpose detection", script);
 	}
 
 }

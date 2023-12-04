@@ -999,7 +999,13 @@ public class ImageCombinerWarpyPane {
 		// The following command forces displaying the new image in the current viewer 
 		// and indirectly add a new project entry
 		// ToDo: Check if there is a more clear and stable solution to add a new project entry.
-		Platform.runLater(() -> QuPathGUI.getInstance().getViewer().setImageData(imageDataCreated));
+		Platform.runLater(() -> {
+			try {
+				QuPathGUI.getInstance().getViewer().setImageData(imageDataCreated);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
 		
 	}
 
@@ -1117,7 +1123,7 @@ public class ImageCombinerWarpyPane {
 			// Read annotations from any data file
 			try {
 				// Try to get data from an open viewer first, if possible
-				for (var viewerTmp : qupath.getViewers()) {
+				for (var viewerTmp : qupath.getAllViewers()) {
 					var tempData = viewerTmp.getImageData();
 					if (tempData != null && temp.equals(project.getEntry(viewerTmp.getImageData()))) {
 						imageData = tempData;
@@ -1174,7 +1180,7 @@ public class ImageCombinerWarpyPane {
 			if (overlayTmp != null) { 
 				ImageDisplay displayTmp = null;
 				// Try to get the viewer for the image
-				for (var viewerTmp : qupath.getViewers()) {
+				for (var viewerTmp : qupath.getAllViewers()) {
 					var viewerImageData = viewerTmp.getImageData();
 					if (viewerImageData != null && imageData.equals(viewerImageData)) {
 						displayTmp = viewerTmp.getImageDisplay();
