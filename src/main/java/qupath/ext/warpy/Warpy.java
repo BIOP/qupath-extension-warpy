@@ -1,4 +1,4 @@
-package qupath.ext.biop.warpy;
+package qupath.ext.warpy;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

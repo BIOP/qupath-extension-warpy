@@ -1,4 +1,4 @@
-package qupath.ext.biop.warpy;
+package qupath.ext.warpy;
 
 import org.controlsfx.control.action.Action;
 import org.slf4j.Logger;
