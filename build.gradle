@@ -8,7 +8,7 @@ plugins {
 
 repositories {
     // Use this only for local development!
-    //  mavenLocal()
+    mavenLocal()
     mavenCentral()
 
     maven{

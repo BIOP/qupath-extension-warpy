@@ -26,13 +26,13 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
     private boolean isInstalled = false;
 
     private static final Map<String, String> SCRIPTS = Map.of(
-            "Warpy transfer annotations and detections to current entry", "scripts/Warpy_transfer_annotations_and_detections_to_current_entry.groovy",
-            "Warpy transfer TMAs to current entry", "scripts/Warpy_transfer_TMA_to_current_entry.groovy"
+            "Warpy transfer annotations and detections to current entry", "scripts/Transfer_annotations_and_detections_to_current_entry.groovy",
+            "Warpy transfer TMAs to current entry", "scripts/Transfer_TMA_to_current_entry.groovy"
     );
 
     @Override
     public GitHubRepo getRepository() {
-        return GitHubRepo.create("QuPath Warpy Extension", "biop", "qupath-extension-warpy");
+        return GitHubRepo.create("Warpy Extension", "biop", "qupath-extension-warpy");
     }
 
     @Override
@@ -50,6 +50,9 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
                             qupath.getMenu("Extensions>Warpy", true),
                             new Action(command, e -> openScript(qupath, script)));
                 }
+
+                isInstalled = true;
+
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
@@ -76,6 +79,7 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
         String packageVersion = GeneralTools.getPackageVersion(WarpyExtension.class);
         return Version.parse(packageVersion).toString();
     }
+
 
     private static void openScript(QuPathGUI qupath, String script) {
         var editor = qupath.getScriptEditor();

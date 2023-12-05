@@ -1,23 +1,4 @@
-/*-
- * #%L
- * This file is part of QuPath.
- * %%
- * Copyright (C) 2018 - 2020 QuPath developers, The University of Edinburgh
- * %%
- * QuPath is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * QuPath is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with QuPath.  If not, see <https://www.gnu.org/licenses/>.
- * #L%
- */
+package qupath.ext.imagecombinerwarpy;
 
 /*********************************
  * This file is part of ImageCombinerWarpy ...
@@ -34,10 +15,8 @@
  * Peter Haub (@phaub), Oct 2021
  * 
  *********************************/
-package qupath.ext.imagecombinerwarpy;
 
 import net.imglib2.realtransform.RealTransformSerializer;
-import org.controlsfx.control.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,10 +34,6 @@ import qupath.lib.images.servers.ImageServers;
 import qupath.lib.io.GsonTools;
 import qupath.lib.io.GsonTools.SubTypeAdapterFactory;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-
 /**
  * Extension to make more experimental commands present in the GUI.
  */
@@ -70,10 +45,6 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 	
 	private static final Version minimumVersion = Version.parse("0.3.0-SNAPSHOT");
 
-	private static final LinkedHashMap<String, String> SCRIPTS = new LinkedHashMap<>() {{
-		put("Warpy transfer annotations and detections to current entry", "scripts/Warpy_transfer_annotations_and_detections_to_current_entry.groovy");
-		put("Warpy  transfer TMA to current entry", "scripts/Warpy_transfer_TMA_to_current_entry.groovy");
-	}};
     @Override
     public void installExtension(QuPathGUI qupath) {
     	if (alreadyInstalled || !checkCompatibility())
@@ -97,20 +68,6 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 			MenuTools.addMenuItems(qupath.getMenu("Analyze", false),
 			imageCombinerWarpy);
 
-			SCRIPTS.entrySet().forEach(entry -> {
-				String name = entry.getValue();
-				String command = entry.getKey();
-				try (InputStream stream = ImageCombinerWarpyExtension.class.getClassLoader().getResourceAsStream(name)) {
-					String script = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-					if (script != null) {
-						MenuTools.addMenuItems(
-								qupath.getMenu("Extensions>Cellpose", true),
-								new Action(command, e -> openScript(qupath, script)));
-					}
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
-			});
 	    	alreadyInstalled = true;
 			
 		} catch (Throwable t) {
@@ -160,14 +117,4 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 	public Version getQuPathVersion() {
 		return QuPathExtension.super.getQuPathVersion();
 	}
-
-	private static void openScript(QuPathGUI qupath, String script) {
-		var editor = qupath.getScriptEditor();
-		if (editor == null) {
-			logger.error("No script editor is available!");
-			return;
-		}
-		qupath.getScriptEditor().showScript("Warpy", script);
-	}
-
 }
