@@ -1,8 +1,5 @@
-//import net.imglib2.realtransform.RealTransform;
-//import qupath.ext.biop.warpy.Warpy;
-
 import net.imglib2.realtransform.RealTransform;
-import qupath.ext.biop.warpy.Warpy;
+import qupath.ext.warpy.Warpy;
 
 import java.io.File;
 

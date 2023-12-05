@@ -57,4 +57,4 @@ fireHierarchyUpdate()
 println "Warpy anotations and detections transfer script done"
 
 // Necessary import, requires qupath-extenstion-warpy, see: https://github.com/BIOP/qupath-extension-warpy
-import qupath.ext.biop.warpy.*
+import qupath.ext.warpy.*

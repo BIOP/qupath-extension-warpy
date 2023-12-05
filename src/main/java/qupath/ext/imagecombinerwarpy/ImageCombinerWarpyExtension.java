@@ -167,7 +167,7 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 			logger.error("No script editor is available!");
 			return;
 		}
-		qupath.getScriptEditor().showScript("Cellpose detection", script);
+		qupath.getScriptEditor().showScript("Warpy", script);
 	}
 
 }
