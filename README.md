@@ -1,6 +1,6 @@
 # QuPath Warpy extension
 
-This repo adds some support for non linear deformation and registration in QuPath, by using the [ImgLib2](https://github.com/imglib/imglib2) library.
+This repo adds some support for nonlinear deformation and registration in QuPath, by using the [ImgLib2](https://github.com/imglib/imglib2) library.
 
 ## Documentation
 
