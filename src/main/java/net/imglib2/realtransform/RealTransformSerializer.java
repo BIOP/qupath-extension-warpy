@@ -33,6 +33,7 @@ public class RealTransformSerializer {
         GsonTools.SubTypeAdapterFactory<RealTransform> factoryRealTransform = GsonTools.createSubTypeAdapterFactory(RealTransform.class, "type");
         factoryRealTransform.registerSubtype(ThinplateSplineTransform.class);
         factoryRealTransform.registerSubtype(Wrapped2DTransformAs3D.class);
+        factoryRealTransform.registerSubtype(InvertibleWrapped2DTransformAs3D.class);
         factoryRealTransform.registerSubtype(WrappedIterativeInvertibleRealTransform.class);
         factoryRealTransform.registerSubtype(RealTransformSequence.class);
         factoryRealTransform.registerSubtype(InvertibleRealTransformSequence.class);
@@ -42,6 +43,7 @@ public class RealTransformSerializer {
         builder.registerTypeAdapterFactory(factoryRealTransform);
         builder.registerTypeHierarchyAdapter(ThinplateSplineTransform.class, new ThinPlateSplineTransformAdapter());
         builder.registerTypeHierarchyAdapter(Wrapped2DTransformAs3D.class, new Wrapped2DTransformAs3DRealTransformAdapter());
+        builder.registerTypeHierarchyAdapter(InvertibleWrapped2DTransformAs3D.class, new InvertibleWrapped2DTransformAs3DRealTransformAdapter());
         builder.registerTypeHierarchyAdapter(WrappedIterativeInvertibleRealTransform.class, new WrappedIterativeInvertibleRealTransformAdapter());
         builder.registerTypeHierarchyAdapter(RealTransformSequence.class, new RealTransformSequenceAdapter());
         builder.registerTypeHierarchyAdapter(InvertibleRealTransformSequence.class, new InvertibleRealTransformSequenceAdapter());
@@ -166,6 +168,31 @@ public class RealTransformSerializer {
 
         @Override
         public JsonElement serialize(Wrapped2DTransformAs3D wrapped2DTransformAs3D, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject obj = new JsonObject();
+            obj.add("wrappedTransform", jsonSerializationContext.serialize(wrapped2DTransformAs3D.getTransform(), RealTransform.class));
+            return obj;
+        }
+
+    }
+
+    public static class InvertibleWrapped2DTransformAs3DRealTransformAdapter implements JsonSerializer<InvertibleWrapped2DTransformAs3D>,
+            JsonDeserializer<InvertibleWrapped2DTransformAs3D> {
+
+        @Override
+        public InvertibleWrapped2DTransformAs3D deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            RealTransform rt = jsonDeserializationContext.deserialize(obj.get("wrappedTransform"), RealTransform.class);
+
+            if (!(rt instanceof InvertibleRealTransform)) {
+                logger.error("Wrapped transform not invertible -> deserialization impossible...");
+                // TODO : see if autowrapping works ?
+                return null;
+            }
+            return new InvertibleWrapped2DTransformAs3D((InvertibleRealTransform) rt);
+        }
+
+        @Override
+        public JsonElement serialize(InvertibleWrapped2DTransformAs3D wrapped2DTransformAs3D, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject obj = new JsonObject();
             obj.add("wrappedTransform", jsonSerializationContext.serialize(wrapped2DTransformAs3D.getTransform(), RealTransform.class));
             return obj;
