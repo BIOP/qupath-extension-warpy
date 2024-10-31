@@ -43,10 +43,6 @@ public class AffineTransformInterpolationImageServerBuilder implements ServerBui
 		return new AffineTransformInterpolationImageServer(builder.build(), transforminterpolation);
 	}
 
-	protected ImageServerMetadata getMetadata() {
-		return metadata;
-	}
-
 	@Override
 	public ImageServer<BufferedImage> build() throws Exception {
 		var server = buildOriginal();
@@ -67,7 +63,7 @@ public class AffineTransformInterpolationImageServerBuilder implements ServerBui
 		ServerBuilder<BufferedImage> newBuilder = builder.updateURIs(updateMap);
 		if (newBuilder == builder)
 			return this;
-		return new AffineTransformInterpolationImageServerBuilder(getMetadata(), newBuilder, transforminterpolation);
+		return new AffineTransformInterpolationImageServerBuilder(getMetadata().get(), newBuilder, transforminterpolation);
 	}
 
 
