@@ -24,7 +24,7 @@ ext.qupathVersion = gradle.ext.qupathVersion
 
 ext.moduleName = "qupath.ext.warpy"
 description = "QuPath extension to use Warpy"
-version = "0.3.2-SNAPSHOT"
+version = "0.4.0"
 
 dependencies {
     implementation "io.github.qupath:qupath-gui-fx:${qupathVersion}"
@@ -56,7 +56,7 @@ tasks.register("copyDependencies", Copy) {
  */
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
     if (project.properties['sources'])
         withSourcesJar()
