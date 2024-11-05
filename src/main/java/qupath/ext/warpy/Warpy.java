@@ -396,14 +396,17 @@ public class Warpy {
         } else if (object instanceof PathCellObject) {
             // Need to transform the nucleus as well
             ROI original_nuc = ((PathCellObject) object).getNucleusROI();
+            ROI transformed_nuc_roi = null;
+            if (original_nuc != null) {
 
-            Geometry nuc_geometry = original_nuc.getGeometry();
+                Geometry nuc_geometry = original_nuc.getGeometry();
 
-            GeometryTools.attemptOperation(nuc_geometry, (g) -> {
-                g.apply(transform);
-                return g;
-            });
-            ROI transformed_nuc_roi = GeometryTools.geometryToROI(nuc_geometry, original_roi.getImagePlane());
+                GeometryTools.attemptOperation(nuc_geometry, (g) -> {
+                    g.apply(transform);
+                    return g;
+                });
+                transformed_nuc_roi = GeometryTools.geometryToROI(nuc_geometry, original_roi.getImagePlane());
+            }
             transformedObject = PathObjects.createCellObject(transformed_roi, transformed_nuc_roi, object.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
 
         } else if (object instanceof PathDetectionObject) {
@@ -412,6 +415,9 @@ public class Warpy {
             throw new Exception("Unknown PathObject class for class " + object.getClass().getSimpleName());
         }
 
+        // Return the same ID as the original object
+        transformedObject.setID(object.getID());
+        transformedObject.setName(object.getName());
         return transformedObject;
     }
 
