@@ -415,6 +415,9 @@ public class Warpy {
             throw new Exception("Unknown PathObject class for class " + object.getClass().getSimpleName());
         }
 
+        // Return the same ID as the original object
+        transformedObject.setID(object.getID());
+        transformedObject.setName(object.getName());
         return transformedObject;
     }
 
