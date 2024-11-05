@@ -12,11 +12,10 @@ import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qupath.lib.analysis.features.ObjectMeasurements;
-import qupath.lib.common.GeneralTools;
-import qupath.lib.common.Version;
 import qupath.lib.gui.QuPathApp;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
+import qupath.lib.images.servers.TransformedServerBuilder;
 import qupath.lib.objects.*;
 import qupath.lib.objects.hierarchy.TMAGrid;
 import qupath.lib.projects.Project;
@@ -24,18 +23,13 @@ import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.roi.GeometryTools;
 import qupath.lib.roi.ROIs;
 import qupath.lib.roi.interfaces.ROI;
-import qupath.lib.scripting.QP;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,8 +41,8 @@ import static qupath.lib.scripting.QP.*;
  * Utility class which bridges real transformation of the ImgLib2 world and
  * makes it easily usable into JTS world, mainly used by QuPath
  * <p>
- * See initial forum thread : https://forum.image.sc/t/qupath-arbitrarily-transform-detections-and-annotations/49674
- * For documentation regarding this tool, see https://c4science.ch/w/bioimaging_and_optics_platform_biop/image-processing/wsi_registration_fjii_qupath/
+ * See initial forum thread : <a href="https://forum.image.sc/t/qupath-arbitrarily-transform-detections-and-annotations/49674">...</a>
+ * For documentation regarding this tool, see <a href="https://c4science.ch/w/bioimaging_and_optics_platform_biop/image-processing/wsi_registration_fjii_qupath/">...</a>
  * <p>
  * Extra dependencies required for QuPath:
  * <p>
@@ -69,7 +63,7 @@ public class Warpy {
     final private static Logger logger = LoggerFactory.getLogger(Warpy.class);
 
     // Pattern to match the transform file
-    private static Pattern transformFilePattern = Pattern.compile("transform\\_(?<target>\\d+)\\_(?<source>\\d+)\\.json");
+    private static final Pattern transformFilePattern = Pattern.compile("transform_(?<target>\\d+)_(?<source>\\d+)\\.json");
 
     /**
      * Recovers a list of candidate entries in this project that have a RealTransform file that matches the pattern in
@@ -77,39 +71,39 @@ public class Warpy {
      * @param targetEntry the entry which should *receive* transformed objects. Typically the active entry.
      * @return a collection of project entries that have a useable and valid RealTransform (forward or valid inverse)
      */
-    public static Collection<ProjectImageEntry> getCandidateSourceEntries(ProjectImageEntry targetEntry) {
+    public static Collection<ProjectImageEntry<?>> getCandidateSourceEntries(ProjectImageEntry<?> targetEntry) {
 
-        Project project = getProject();
+        Project<?> project = getProject();
         // Find in the targetfolder, the source entries that have a Serialized RealTransform file
-        List<ProjectImageEntry<BufferedImage>> entries = project.getImageList();
+        List<? extends ProjectImageEntry<?>> entries = project.getImageList();
 
         String targetID = targetEntry.getID();
 
         // Find if there is a forward transform file and return the entry source
         Path targetEntryPath = targetEntry.getEntryPath();
-        Collection<ProjectImageEntry> candidateTransformableEntries = new ArrayList<>();
-        for (File currentFile : targetEntryPath.toFile().listFiles()) {
+        Collection<ProjectImageEntry<?>> candidateTransformableEntries = new ArrayList<>();
+        for (File currentFile : Objects.requireNonNull(targetEntryPath.toFile().listFiles())) {
             Matcher matcher = transformFilePattern.matcher(currentFile.getName());
             if (matcher.matches()) {
                 if (matcher.group("target").equals(targetID)) {
                     // Check the source ID and return if
                     String sourceID = matcher.group("source");
-                    ProjectImageEntry sourceEntry = getEntryFromID(sourceID);
+                    ProjectImageEntry<?> sourceEntry = getEntryFromID(sourceID);
                     if (sourceEntry != null) candidateTransformableEntries.add(sourceEntry);
                 }
             }
         }
 
         // Find is there are inverse transforms available by going through all entries
-        for (ProjectImageEntry entry : entries) {
+        for (ProjectImageEntry<?> entry : entries) {
             if (!entry.equals(targetEntry)) {
-                for (File currentFile : entry.getEntryPath().toFile().listFiles()) {
+                for (File currentFile : Objects.requireNonNull(entry.getEntryPath().toFile().listFiles())) {
                     Matcher matcher = transformFilePattern.matcher(currentFile.getName());
                     if (matcher.matches()) {
                         if (matcher.group("source").equals(targetID)) {
                             // Check the source ID and return it
                             String inverseSourceID = matcher.group("target");
-                            ProjectImageEntry inverseSourceEntry = getEntryFromID(inverseSourceID);
+                            ProjectImageEntry<?> inverseSourceEntry = getEntryFromID(inverseSourceID);
                             if (inverseSourceEntry != null) {
                                 // Try to get the transform and see if it works
                                 RealTransform rt = getRealTransform(currentFile);
@@ -138,7 +132,7 @@ public class Warpy {
      * @param sourceEntry the entry from which we want to extract the objects
      * @return a collection of PathObjects, in hierarchical form
      */
-    public static Collection<PathObject> getPathObjectsFromEntry(ProjectImageEntry sourceEntry) {
+    public static Collection<PathObject> getPathObjectsFromEntry(ProjectImageEntry<?> sourceEntry) {
         try {
             // Do not return the TMA cores
             return sourceEntry.readHierarchy().getRootObject().getChildObjects().stream().filter(Predicate.not(PathObject::isTMACore)).collect(Collectors.toList());
@@ -148,7 +142,7 @@ public class Warpy {
         return null;
     }
 
-    public static TMAGrid getTMAGridFromEntry(ProjectImageEntry sourceEntry) {
+    public static TMAGrid getTMAGridFromEntry(ProjectImageEntry<?> sourceEntry) {
         try {
             return sourceEntry.readHierarchy().getTMAGrid();
         } catch (IOException e) {
@@ -214,16 +208,9 @@ public class Warpy {
         CoordinateSequenceFilter transformer = getJTSFilter(transform);
 
         // Transforms all objects and add them to a new list
-        List<PathObject> transformedObjects = new ArrayList<>();
-
-        for (PathObject o : objects) {
-            try {
-                transformedObjects.add(transformPathObjectAndChildren(o, transformer, true, true));
-            } catch (Exception e) {
-                logger.info("Could not transform object " + o, e);
-            }
-        }
-        return transformedObjects;
+        return objects.stream().map(o-> transformPathObjectAndChildren(o, transformer, true, true) )
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -232,8 +219,8 @@ public class Warpy {
      * @param id the ID to get the ImageEntry from
      * @return the corresponding ProjectImageEntry or null if none is found
      */
-    private static ProjectImageEntry getEntryFromID(String id) {
-        for (ProjectImageEntry entry : QP.getProject().getImageList()) {
+    private static ProjectImageEntry<?> getEntryFromID(String id) {
+        for (ProjectImageEntry<?> entry : getProject().getImageList()) {
             if (entry.getID().equals(id)) return entry;
         }
         return null;
@@ -247,13 +234,13 @@ public class Warpy {
      *                    Warpy can work out if the serialized transform is a forward one or an inverse transform.
      * @return the RealTransform to use for warping pathObjects
      */
-    public static RealTransform getRealTransform(ProjectImageEntry sourceEntry, ProjectImageEntry targetEntry) {
+    public static RealTransform getRealTransform(ProjectImageEntry<?> sourceEntry, ProjectImageEntry<?> targetEntry) {
 
         // Search Forward
         String targetID = targetEntry.getID();
         String sourceID = sourceEntry.getID();
         Path targetEntryPath = targetEntry.getEntryPath();
-        for (File currentFile : targetEntryPath.toFile().listFiles()) {
+        for (File currentFile : Objects.requireNonNull(targetEntryPath.toFile().listFiles())) {
             Matcher matcher = transformFilePattern.matcher(currentFile.getName());
             if (matcher.matches()) {
                 if (matcher.group("target").equals(targetID)) {
@@ -268,7 +255,7 @@ public class Warpy {
 
         // Search Backwards
         Path sourceEntryPath = sourceEntry.getEntryPath();
-        for (File currentFile : sourceEntryPath.toFile().listFiles()) {
+        for (File currentFile : Objects.requireNonNull(sourceEntryPath.toFile().listFiles())) {
             Matcher matcher = transformFilePattern.matcher(currentFile.getName());
             if (matcher.matches()) {
                 if (matcher.group("source").equals(targetID)) {
@@ -279,7 +266,7 @@ public class Warpy {
                         if (rt instanceof InvertibleRealTransform) {
                             return ((InvertibleRealTransform) rt).inverse();
                         } else {
-                            logger.error("Could not invert transform from file {}. This error should not exist.");
+                            logger.error("Could not invert transform from file {}. This error should not exist.", currentFile.getAbsolutePath());
                             return null;
                         }
                     }
@@ -299,17 +286,16 @@ public class Warpy {
      * @throws Exception an error in case that the objects could not be measured
      */
     public static void addIntensityMeasurements(Collection<PathObject> objects, double downsample) throws Exception {
-        ImageServer server = getCurrentServer();
 
-
+        ImageServer<BufferedImage> server = (ImageServer<BufferedImage>) getCurrentServer();
         //If the image is RGB, this line can be added to import the correct measurements (DAB, etc.):
         //cf https://forum.image.sc/t/transferring-segmentation-predictions-from-custom-masks-to-qupath/43408/15
         ImageData.ImageType type = getProjectEntry().readImageData().getImageType();
 
         if (type.equals(ImageData.ImageType.BRIGHTFIELD_H_DAB) ||
-                type.equals(ImageData.ImageType.BRIGHTFIELD_H_DAB) ||
+                type.equals(ImageData.ImageType.BRIGHTFIELD_H_E) ||
                 type.equals(ImageData.ImageType.BRIGHTFIELD_OTHER)) {
-            server = new qupath.lib.images.servers.TransformedServerBuilder(server)
+            server = new TransformedServerBuilder(server)
                     .deconvolveStains(getCurrentImageData().getColorDeconvolutionStains(), 1, 2)
                     .build();
         }
@@ -344,20 +330,25 @@ public class Warpy {
      *
      * @param object           qupath annotation or detection object
      * @param transform        jts free form transformation
-     * @param copyMeasurements whether or not to transfer all the source PathObject Measurements to the resulting PathObject
+     * @param copyMeasurements whether to transfer all the source PathObject Measurements to the resulting PathObject
      */
-    private static PathObject transformPathObjectAndChildren(PathObject object, CoordinateSequenceFilter transform, boolean checkGeometryValidity, boolean copyMeasurements) throws Exception {
+    private static PathObject transformPathObjectAndChildren(PathObject object, CoordinateSequenceFilter transform, boolean checkGeometryValidity, boolean copyMeasurements) {
 
-        PathObject transformedObject = transformPathObject(object, transform, checkGeometryValidity, copyMeasurements);
-
-        if (object.hasChildObjects()) {
-            for (PathObject child : object.getChildObjects()) {
-                transformedObject.addChildObject(transformPathObjectAndChildren(child, transform, checkGeometryValidity, copyMeasurements));
-            }
+        PathObject transformedObject = null;
+        try {
+            transformedObject = transformPathObject(object, transform, checkGeometryValidity, copyMeasurements);
+        } catch (Exception e) {
+            logger.error("Could not transform object {}, error is {}", object, e.getLocalizedMessage());
         }
 
-        // Re-add name if it exists
-        transformedObject.setName(object.getName());
+        if (object.hasChildObjects() && transformedObject != null ) {
+            logger.info("Transforming {}", object);
+            List<PathObject> children = object.getChildObjects().stream()
+                    .map(child -> transformPathObjectAndChildren(child, transform, checkGeometryValidity, copyMeasurements))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            transformedObject.addChildObjects(children);
+        }
 
         return transformedObject;
     }
@@ -391,33 +382,36 @@ public class Warpy {
         ROI transformed_roi = GeometryTools.geometryToROI(geometry, original_roi.getImagePlane());
 
         PathObject transformedObject;
-        if (object instanceof PathAnnotationObject) {
-            transformedObject = PathObjects.createAnnotationObject(transformed_roi, object.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
-        } else if (object instanceof PathCellObject) {
-            // Need to transform the nucleus as well
-            ROI original_nuc = ((PathCellObject) object).getNucleusROI();
-            ROI transformed_nuc_roi = null;
-            if (original_nuc != null) {
+        switch (object) {
+            case PathAnnotationObject pathAnnotationObject ->
+                    transformedObject = PathObjects.createAnnotationObject(transformed_roi, pathAnnotationObject.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
+            case PathCellObject pathCellObject -> {
+                // Need to transform the nucleus as well
+                ROI original_nuc = pathCellObject.getNucleusROI();
+                ROI transformed_nuc_roi = null;
+                if (original_nuc != null) {
 
-                Geometry nuc_geometry = original_nuc.getGeometry();
+                    Geometry nuc_geometry = original_nuc.getGeometry();
 
-                GeometryTools.attemptOperation(nuc_geometry, (g) -> {
-                    g.apply(transform);
-                    return g;
-                });
-                transformed_nuc_roi = GeometryTools.geometryToROI(nuc_geometry, original_roi.getImagePlane());
+                    GeometryTools.attemptOperation(nuc_geometry, (g) -> {
+                        g.apply(transform);
+                        return g;
+                    });
+                    transformed_nuc_roi = GeometryTools.geometryToROI(nuc_geometry, original_roi.getImagePlane());
+                }
+                transformedObject = PathObjects.createCellObject(transformed_roi, transformed_nuc_roi, object.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
             }
-            transformedObject = PathObjects.createCellObject(transformed_roi, transformed_nuc_roi, object.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
-
-        } else if (object instanceof PathDetectionObject) {
-            transformedObject = PathObjects.createDetectionObject(transformed_roi, object.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
-        } else {
-            throw new Exception("Unknown PathObject class for class " + object.getClass().getSimpleName());
+            case PathDetectionObject pathDetectionObject ->
+                    transformedObject = PathObjects.createDetectionObject(transformed_roi, pathDetectionObject.getPathClass(), copyMeasurements ? object.getMeasurementList() : null);
+            default -> throw new Exception("Unknown PathObject class for class " + object.getClass().getSimpleName());
         }
 
         // Return the same ID as the original object
-        transformedObject.setID(object.getID());
+        // Add the name and ID here
         transformedObject.setName(object.getName());
+        transformedObject.setID(object.getID());
+        transformedObject.setLocked(object.isLocked());
+
         return transformedObject;
     }
 
@@ -434,8 +428,7 @@ public class Warpy {
             JsonObject element = new Gson().fromJson(fileReader, JsonObject.class);
             fileReader.close();
             element = (JsonObject) RealTransformSerializer.fixAffineTransform(element); // Fix missing type element in old versions
-            RealTransform rt = RealTransformSerializer.getRealTransformAdapter().fromJson(element, RealTransform.class);
-            return rt;
+            return RealTransformSerializer.getRealTransformAdapter().fromJson(element, RealTransform.class);
         } catch (FileNotFoundException e) {
             logger.error("Transform file " + f.getName() + " not found", e);
         } catch (IOException e) {
@@ -482,10 +475,9 @@ public class Warpy {
     /**
      * Main class for debugging
      *
-     * @param args
-     * @throws Exception
+     * @param args some inputs we do not need
      */
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) {
         //String projectPath = "\\\\svfas6.epfl.ch\\biop\\public\\luisa.spisak_UPHUELSKEN\\Overlay\\qp\\project.qpproj";
         QuPathApp.launch(QuPathApp.class);//, projectPath);
     }
