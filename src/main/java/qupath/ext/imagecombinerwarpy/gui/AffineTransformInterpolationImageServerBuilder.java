@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
@@ -66,5 +67,8 @@ public class AffineTransformInterpolationImageServerBuilder implements ServerBui
 		return new AffineTransformInterpolationImageServerBuilder(getMetadata().get(), newBuilder, transforminterpolation);
 	}
 
+	public Optional<ImageServerMetadata> getMetadata() {
+		return Optional.of(metadata);
+	}
 
 }

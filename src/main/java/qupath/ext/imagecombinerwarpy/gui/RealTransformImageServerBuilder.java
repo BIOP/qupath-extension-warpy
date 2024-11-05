@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
@@ -67,6 +68,10 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 		if (newBuilder == builder)
 			return this;
 		return new RealTransformImageServerBuilder(getMetadata().get(), newBuilder, realtransforminterpolation);
+	}
+
+	public Optional<ImageServerMetadata> getMetadata() {
+		return Optional.of(metadata);
 	}
 
 }
