@@ -86,7 +86,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	private double[] dsLevels;
 	
 	
-	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
+	public RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
 		super(server);
 		
 		logger.trace("Creating server for {} and Real transform {}", server, rtis);
@@ -264,18 +264,10 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		
 		var wrappedServer = getWrappedServer();
 
-		int padFactor = 4; //2;
-		//Rotation rotation = null;
-		//if (wrappedServer instanceof TransformingImageServer)
-		//	rotation = getRotation(wrappedServer, null);		
-		//if (rotation != null && rotation != Rotation.ROTATE_NONE)
-		//	padFactor = 4;
+		int padFactor = 4;
 		
 		double scaledDownsample = downsample / globalScale;		
 		double downsampleTR = getBestDownsample(dsLevels, scaledDownsample);
-
-		//double maxDownsample = wrappedServer.getDownsampleForResolution(wrappedServer.nResolutions()-1);
-		//double downsampleTR = Math.min(downsample, maxDownsample);
 		
 		// Pad slightly (With padFactor=4 black stripes are avoided  - especially for large rotations and when images are loaded with rotation)
 		int pad = (int) Math.ceil(downsampleTR * padFactor);
@@ -352,14 +344,14 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 				pixelsInt = new int[nBands][];
 				pixelsFloat = new float[nBands][];
 				for (int b=0; b<nBands; b++) {
-					pixelsInt[b] = (int[])rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (int[])null);				
-					pixelsFloat[b] = InterpolationHelper.convertToFloatArray(pixelsInt[b],  (float[])null);
+					pixelsInt[b] = rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (int[]) null);
+					pixelsFloat[b] = InterpolationHelper.convertToFloatArray(pixelsInt[b],  null);
 				}
 			}
 			else {
 				pixelsFloat = new float[nBands][];
 				for (int b=0; b<nBands; b++) {
-					pixelsFloat[b] = (float[])rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (float[])null);
+					pixelsFloat[b] = rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (float[])null);
 				}
 			}					
 		}
@@ -367,27 +359,19 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		int xB1 = 0, xB2 = 1;
 		int yB1 = 0, yB2 = 1;
 		
-		if ( useCubicInterpolation ) { //interpolationMode == InterpolationType.BICUBIC) {
+		if ( useCubicInterpolation ) {
 			xB1 = 1; xB2 = 2;
 			yB1 = 1; yB2 = 2;
-		}	
-		/*
-		int[][] samplesInt = null;
-		float[][] samplesFloat = null;
-		
-		if ( isNotFloatType )
-			samplesInt = new int[nBands][w*h];
-		else
-			samplesFloat = new float[nBands][w*h];
-		*/
+		}
+
 		for (int y = 0; y < h; y++) { // Target
 			
-			int offset = y * w;
+			//int offset = y * w;
 			
 			for (int x = 0; x < w; x++) { // Target
 				
-				dbl[0] = x*downsample + request.getX();
-				dbl[1] = y*downsample + request.getY();
+				dbl[0] = x * downsample + request.getX();
+				dbl[1] = y * downsample + request.getY();
 				
 				transform2.apply(dbl, dbl2);// Target -> Source
 				
@@ -404,6 +388,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 						index = yy * widthTransform + xx;
 
 						for (int b=0; b<nBands; b++) {
+
 							p1 = pixelsFloat[b][index];
 							p2 = pixelsFloat[b][index + 1];
 							p3 = pixelsFloat[b][index + widthTransform];
@@ -417,16 +402,14 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 							pOut = pA + kb*(pB - pA);
 							
 							if ( isNotFloatType ) {
-								raster.setSample(x, y, b, (int)Math.round(pOut));
-								//samplesInt[b][offset+x] = (int)Math.round(pOut);
+								raster.setSample(x, y, b, Math.round(pOut));
 							}
 							else {
 								raster.setSample(x, y, b, pOut);
-								//samplesFloat[b][offset+x] = pOut;
 							}
 						}
 					}
-					else if ( useCubicInterpolation ) { //interpolationMode == InterpolationType.BICUBIC) { 
+					else if ( useCubicInterpolation ) {
 						// Portion from Burger&Burge, Digital Image Processing, 2010
 						// https://en.wikipedia.org/wiki/Bicubic_interpolation
 						xx = (int)Math.floor(dblX);
@@ -446,35 +429,24 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 							}
 							
 							if ( isNotFloatType ) {
-								raster.setSample(x, y, b, (int)Math.round(pA));
-								//samplesInt[b][offset+x] = (int)Math.round(pA);
+								raster.setSample(x, y, b, Math.round(pA));
 							}
 							else {
 								raster.setSample(x, y, b, pA);
-								//samplesFloat[b][offset+x] = pA;
 							}
 						}
 					}
 					else {  // Nearest neighbor Interpolation
-						xx = (int)Math.round(dblX);
-						yy = (int)Math.round(dblY);		
+						xx = Math.round(dblX);
+						yy = Math.round(dblY);
 						
-						elements = rasterTransform.getDataElements(xx, yy, elements);// Source
+						elements = rasterTransform.getDataElements(xx, yy, elements); // Source
 						raster.setDataElements(x, y, elements); // Target
 					}				
 				}				
 			}
 		}
-		/*
-		if (interpolationMode == InterpolationType.BILINEAR || useCubicInterpolation) {
-			for (int b=0; b<nBands; b++) {
-				if ( isNotFloatType )
-					raster.setSamples(0, 0, w, h, b, samplesInt[b]);
-				else
-					raster.setSamples(0, 0, w, h, b, samplesFloat[b]);
-			}
-		}
-		*/
+
 		return new BufferedImage(img.getColorModel(), raster, img.isAlphaPremultiplied(), null);
 	}
 
