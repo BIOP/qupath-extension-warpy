@@ -93,16 +93,16 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	final private double[][] coordX; // pre-computed x coordinate in pixel of the base wrapped server, input is the binned x,y pixel coordinates of this server (bin size = downscaleForTransformationComputation)
 	final private double[][] coordY; // pre-computed y coordinate in pixel of the base wrapped server, input is the binned x,y pixel coordinates of this server (bin size = downscaleForTransformationComputation)
 
-	public RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
+	public RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis) throws NoninvertibleTransformException {
 		super(server);
 		
 		logger.trace("Creating server for {} and Real transform {}", server, rtis);
 				
 		this.rtis = rtis;
 
-		this.downscaleForTransformationComputation = 128; // TODO : put this as an input parameter of the constructor
+		this.downscaleForTransformationComputation = rtis.getTransformationDownsampling();
 
-		this.downSampleTransformationField = true; // TODO : put this as an input parameter of the constructor
+		this.downSampleTransformationField = rtis.downsampleTransformation();
 		
 		this.interpolationMode = InterpolationModes.getInterpolationType(rtis.getInterpolation());
 
@@ -278,7 +278,7 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		for (int i=dsLevels.length-2; i>=0; i--) {
 			if (ds >= dsLevels[i]) {
 				// return next higher level to avoid downsampling
-				return dsLevels[i+1];
+				return dsLevels[i];
 			}
 		}
 		return dsLevels[0];

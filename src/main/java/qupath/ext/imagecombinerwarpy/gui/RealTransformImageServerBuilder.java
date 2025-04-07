@@ -24,7 +24,7 @@ import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.ImageServerBuilder.ServerBuilder;
 
-public class RealTransformImageServerBuilder implements ServerBuilder<BufferedImage> {// extends AbstractServerBuilder<BufferedImage> {
+public class RealTransformImageServerBuilder implements ServerBuilder<BufferedImage> {
 	
 	//::dip
 	private ImageServerMetadata metadata;
@@ -42,8 +42,7 @@ public class RealTransformImageServerBuilder implements ServerBuilder<BufferedIm
 	
 	//@Override
 	protected ImageServer<BufferedImage> buildOriginal() throws Exception {
-		int interpolation = realtransforminterpolation.getInterpolation();
-		return new RealTransformImageServer(builder.build(), realtransforminterpolation, interpolation);
+		return new RealTransformImageServer(builder.build(), realtransforminterpolation);
 	}
 
 

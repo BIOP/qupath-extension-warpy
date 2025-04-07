@@ -51,6 +51,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.TermCriteria;
@@ -221,6 +227,8 @@ public class ImageCombinerWarpyPane {
 	private ObjectProperty<AlignmentMethod> alignmentMethod = new SimpleObjectProperty<>(AlignmentMethod.INTENSITY);
 
 	private ObjectProperty<InterpolationType> interpolationType = new SimpleObjectProperty<>(InterpolationType.NEARESTNEIGHBOR);
+	private SimpleBooleanProperty downsampleTransformationField = new SimpleBooleanProperty(false);
+	private IntegerProperty transformationFieldDownsampling = new SimpleIntegerProperty(128);
 
 	private Map<ImageData<BufferedImage>, ImageCombinerWarpyServerOverlay> mapOverlays = new WeakHashMap<>();
 	private EventHandler<TransformChangedEvent> transformEventHandler = new EventHandler<TransformChangedEvent>() {
@@ -379,25 +387,43 @@ public class ImageCombinerWarpyPane {
 		GridPane.setFillWidth(labelTranslate, Boolean.TRUE);
 		paneAlignment.add(labelTranslate, 0, row++, 5, 1);
 
+		// Interpolation GUI element
+		Label labelInterpolationType = new Label("Interpolation Mode:");
 		ComboBox<InterpolationType> comboInterpolation = new ComboBox<>(
 				FXCollections.observableArrayList(InterpolationType.values()));
 		comboInterpolation.setMaxWidth(Double.MAX_VALUE);
 		comboInterpolation.getSelectionModel().select(interpolationType.get());
 		interpolationType.bind(comboInterpolation.getSelectionModel().selectedItemProperty());
-		Label labelInterpolationType = new Label("Interpolation Mode:");
-		
+
+		// Downsample transformation field GUI element
+		Label labelDownsampleTransformation = new Label("Downsample transformation:");
+		CheckBox downsampleTransformationCheckBox = new CheckBox();
+		downsampleTransformationCheckBox.selectedProperty().bindBidirectional(downsampleTransformationField);
+
+		// Downsampling size of transformation field (in pixels) GUI element
+		Label labelTransformationDownsampling = new Label("Transformation downsampling (in pixel unit):");
+		Spinner<Integer> transformationFieldDownsamplingSpinner = new Spinner<>();
+		SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 2048, transformationFieldDownsampling.get());
+		transformationFieldDownsamplingSpinner.setValueFactory(valueFactory);
+		transformationFieldDownsamplingSpinner.setEditable(true);
+		valueFactory.valueProperty().bindBidirectional(transformationFieldDownsampling.asObject());
+
 		paneAlignment.add(labelRotationIncrement, col++, row);
 		paneAlignment.add(tfRotationIncrement, col++, row);
 		paneAlignment.add(btnRotateLeft, col++, row);
 		paneAlignment.add(btnRotateRight, col++, row);
-		paneAlignment.add(labelInterpolationType,  col++, row++);
+		paneAlignment.add(labelInterpolationType,  col++, row);
+		paneAlignment.add(labelDownsampleTransformation,  col++, row);
+		paneAlignment.add(labelTransformationDownsampling,  col++, row++);
 		//::dip
 		col = 0;
 		paneAlignment.add(labelScaleIncrement, col++, row);
 		paneAlignment.add(tfScaleIncrement, col++, row);
 		paneAlignment.add(btnScaleDown, col++, row);
 		paneAlignment.add(btnScaleUp, col++, row);
-		paneAlignment.add(comboInterpolation, col++, row++);
+		paneAlignment.add(comboInterpolation, col++, row);
+		paneAlignment.add(downsampleTransformationCheckBox, col++, row);
+		paneAlignment.add(transformationFieldDownsamplingSpinner, col++, row++);
 		
 		TitledPane titledAlignment = new TitledPane("Interactive alignment", paneAlignment);
 		
@@ -931,9 +957,9 @@ public class ImageCombinerWarpyPane {
 					}
 									
 					int interpolationMode = interpolationType.get().ordinal();
-					RealTransformInterpolation realtransformsequence = new RealTransformInterpolation(realtransform, interpolationMode);
+					RealTransformInterpolation realtransformsequence = new RealTransformInterpolation(realtransform, interpolationMode, downsampleTransformationField.get(), transformationFieldDownsampling.get());
 					try {
-						transformServerTmp = new RealTransformImageServer(serverTmp, realtransformsequence, interpolationMode);
+						transformServerTmp = new RealTransformImageServer(serverTmp, realtransformsequence);
 					} catch (NoninvertibleTransformException e) {
 						e.printStackTrace();
 					}
