@@ -45,6 +45,7 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,16 +83,26 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 	
 	private InterpolationType interpolationMode = InterpolationType.NEARESTNEIGHBOR;
 	
-	private double globalScale = 1.0;	
+	private double globalScale = 1.0;
 	private double[] dsLevels;
-	
-	
-	protected RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis, int interpolation) throws NoninvertibleTransformException {
+
+	// Fields for fast warping -> precomputes a transformation field, potentially downscaled
+	final boolean downSampleTransformationField; // Flag for transformation field pre-computation
+	final private int downscaleForTransformationComputation; // Downscaling of the transformation field, in pixel units of the current image server, only xy is supported
+
+	final private double[][] coordX; // pre-computed x coordinate in pixel of the base wrapped server, input is the binned x,y pixel coordinates of this server (bin size = downscaleForTransformationComputation)
+	final private double[][] coordY; // pre-computed y coordinate in pixel of the base wrapped server, input is the binned x,y pixel coordinates of this server (bin size = downscaleForTransformationComputation)
+
+	public RealTransformImageServer(final ImageServer<BufferedImage> server, RealTransformInterpolation rtis) throws NoninvertibleTransformException {
 		super(server);
 		
 		logger.trace("Creating server for {} and Real transform {}", server, rtis);
 				
 		this.rtis = rtis;
+
+		this.downscaleForTransformationComputation = rtis.getTransformationDownsampling();
+
+		this.downSampleTransformationField = rtis.downsampleTransformation();
 		
 		this.interpolationMode = InterpolationModes.getInterpolationType(rtis.getInterpolation());
 
@@ -166,6 +177,32 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		
 		globalScale = scale;		
 		dsLevels = server.getPreferredDownsamples();
+
+		if (downSampleTransformationField) {
+			long w = this.getWidth();
+			long h = this.getHeight();
+			if ((double) w/(double) downscaleForTransformationComputation>Integer.MAX_VALUE) {
+				throw new RuntimeException("Image too big - Downsampling the transformation field "+downscaleForTransformationComputation+" times is not enough.");
+			}
+			if ((double) h/(double) downscaleForTransformationComputation>Integer.MAX_VALUE) {
+				throw new RuntimeException("Image too big - Downsampling the transformation field "+downscaleForTransformationComputation+" times is not enough.");
+			}
+			int nX = (int) (w/downscaleForTransformationComputation)+2; // Note: the transformation can be extrapolated, no problem going beyond w for the last element
+			int nY = (int) (h/downscaleForTransformationComputation)+2; // Note: the transformation can be extrapolated, no problem going beyond h for the last element
+
+			coordX = new double[nY][nX];
+			coordY = new double[nY][nX];
+
+			// Initialize transformation field to NaN
+			for (int y = 0; y<nY; y++) {
+				Arrays.fill(coordX[y], Double.NaN);
+				Arrays.fill(coordY[y], Double.NaN);
+			}
+
+		} else {
+			coordX = null;
+			coordY = null;
+		}
 	}
 	
 
@@ -241,17 +278,96 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		for (int i=dsLevels.length-2; i>=0; i--) {
 			if (ds >= dsLevels[i]) {
 				// return next higher level to avoid downsampling
-				return dsLevels[i+1];
+				return dsLevels[i];
 			}
 		}
 		return dsLevels[0];
 	}
-	
+
+	/**
+	 * NOTE: the third axis transformation is not implemented!
+	 * @param transform, transformation from in to out - both expressed in pixel coordinates
+	 * @param in, 3D position in the input image
+	 * @param out, 3D position in the output image
+	 */
+	void getTransformedCoordinates(RealTransform transform, double[] in, double[] out) {
+
+		// Gets the xy bin within the transformation field
+		int x0 = (int) (in[0] / downscaleForTransformationComputation);
+		int y0 = (int) (in[1] / downscaleForTransformationComputation);
+		int x1 = x0 + 1;
+		int y1 = y0 + 1;
+
+		// If bin is out of bounds, we compute the transform coordinates from the object - no caching, no speed up
+		if ((in[0]<0) || (in[1]<0)) {
+			transform.apply(in, out);
+			return;
+		}
+
+		// If bin is out of bounds, we compute the transform coordinates from the object - no caching, no speed up
+		if ((y1 >= coordX.length) || (x1 >= coordX[y1].length)) {
+			transform.apply(in, out);
+			return;
+		}
+
+		// Make sure the field is computed at these points - no issue with threading since the transform is immutable
+		// besides, in the worst case scenario, the same points will be computed a few times, and that won't lead
+		// to a huge performance impact
+		if (Double.isNaN(coordX[y0][x0])) {
+			transform.apply(new double[]{x0*downscaleForTransformationComputation,y0*downscaleForTransformationComputation,0}, out);
+			coordY[y0][x0] = out[1];
+			coordX[y0][x0] = out[0];
+		}
+		if (Double.isNaN(coordX[y0][x1])) {
+			transform.apply(new double[]{x1*downscaleForTransformationComputation,y0*downscaleForTransformationComputation,0}, out);
+			coordY[y0][x1] = out[1];
+			coordX[y0][x1] = out[0];
+		}
+		if (Double.isNaN(coordX[y1][x1])) {
+			transform.apply(new double[]{x1*downscaleForTransformationComputation,y1*downscaleForTransformationComputation,0}, out);
+			coordY[y1][x1] = out[1];
+			coordX[y1][x1] = out[0];
+		}
+		if (Double.isNaN(coordX[y1][x0])) {
+			// We have to compute
+			transform.apply(new double[]{x0*downscaleForTransformationComputation,y1*downscaleForTransformationComputation,0}, out);
+			coordY[y1][x0] = out[1];
+			coordX[y1][x0] = out[0];
+		}
+
+		// Calculate interpolation weights -> the location within the bin, it is between 0 and 1
+		double wx = (in[0])/downscaleForTransformationComputation-x0;
+		double wy = (in[1])/downscaleForTransformationComputation-y0;
+
+		// Get the four surrounding values in X
+		double f00x = coordX[y0][x0];
+		double f10x = coordX[y0][x1];
+		double f01x = coordX[y1][x0];
+		double f11x = coordX[y1][x1];
+
+		// Get the four surrounding values in Y
+		double f00y = coordY[y0][x0];
+		double f10y = coordY[y0][x1];
+		double f01y = coordY[y1][x0];
+		double f11y = coordY[y1][x1];
+
+		// Perform bilinear interpolation X
+		double topX = f00x * (1 - wx) + f10x * wx;
+		double bottomX = f01x * (1 - wx) + f11x * wx;
+		out[0] = topX * (1 - wy) + bottomX * wy;
+
+		// Perform bilinear interpolation Y
+		double topY = f00y * (1 - wx) + f10y * wx;
+		double bottomY = f01y * (1 - wx) + f11y * wx;
+		out[1] = topY * (1 - wy) + bottomY * wy;
+
+		// out[2] = in[2]; transformation in Z is ignored
+	}
 	
 	@Override
 	public BufferedImage readRegion(RegionRequest request) throws IOException {
 
-		RealTransform transform2 = realtransform.copy();
+		RealTransform transform = realtransform.copy();
 
 		double downsample = request.getDownsample();
 		
@@ -260,22 +376,14 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		// Rectangular request is not necessarily rectangular after spline transformation
 		// Find transformed request by checking n points
 		// along all 4 rectangle edges for potential distortions
-		var boundsTR = createTransformedBounds(bounds, transform2, 10);
+		var boundsTR = createTransformedBounds(bounds, transform, 10);
 		
 		var wrappedServer = getWrappedServer();
 
-		int padFactor = 4; //2;
-		//Rotation rotation = null;
-		//if (wrappedServer instanceof TransformingImageServer)
-		//	rotation = getRotation(wrappedServer, null);		
-		//if (rotation != null && rotation != Rotation.ROTATE_NONE)
-		//	padFactor = 4;
+		int padFactor = 4;
 		
 		double scaledDownsample = downsample / globalScale;		
 		double downsampleTR = getBestDownsample(dsLevels, scaledDownsample);
-
-		//double maxDownsample = wrappedServer.getDownsampleForResolution(wrappedServer.nResolutions()-1);
-		//double downsampleTR = Math.min(downsample, maxDownsample);
 		
 		// Pad slightly (With padFactor=4 black stripes are avoided  - especially for large rotations and when images are loaded with rotation)
 		int pad = (int) Math.ceil(downsampleTR * padFactor);
@@ -352,14 +460,14 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 				pixelsInt = new int[nBands][];
 				pixelsFloat = new float[nBands][];
 				for (int b=0; b<nBands; b++) {
-					pixelsInt[b] = (int[])rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (int[])null);				
-					pixelsFloat[b] = InterpolationHelper.convertToFloatArray(pixelsInt[b],  (float[])null);
+					pixelsInt[b] = rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (int[]) null);
+					pixelsFloat[b] = InterpolationHelper.convertToFloatArray(pixelsInt[b],  null);
 				}
 			}
 			else {
 				pixelsFloat = new float[nBands][];
 				for (int b=0; b<nBands; b++) {
-					pixelsFloat[b] = (float[])rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (float[])null);
+					pixelsFloat[b] = rasterTransform.getSamples(0, 0, widthTransform, heightTransform, b, (float[])null);
 				}
 			}					
 		}
@@ -367,43 +475,42 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 		int xB1 = 0, xB2 = 1;
 		int yB1 = 0, yB2 = 1;
 		
-		if ( useCubicInterpolation ) { //interpolationMode == InterpolationType.BICUBIC) {
+		if ( useCubicInterpolation ) {
 			xB1 = 1; xB2 = 2;
 			yB1 = 1; yB2 = 2;
-		}	
-		/*
-		int[][] samplesInt = null;
-		float[][] samplesFloat = null;
-		
-		if ( isNotFloatType )
-			samplesInt = new int[nBands][w*h];
-		else
-			samplesFloat = new float[nBands][w*h];
-		*/
+		}
+
 		for (int y = 0; y < h; y++) { // Target
 			
-			int offset = y * w;
+			//int offset = y * w;
 			
 			for (int x = 0; x < w; x++) { // Target
 				
-				dbl[0] = x*downsample + request.getX();
-				dbl[1] = y*downsample + request.getY();
+				dbl[0] = x * downsample + request.getX();
+				dbl[1] = y * downsample + request.getY();
+
+				if (downSampleTransformationField) {
+					// Faster -> cache and interpolate transformation field
+					getTransformedCoordinates(transform, dbl, dbl2);
+				} else {
+					// Full transformation computation
+					transform.apply(dbl, dbl2);
+				}
 				
-				transform2.apply(dbl, dbl2);// Target -> Source
-				
-				float dblX = (float) ((dbl2[0]-requestTR.getX())/downsampleTR ); // Source
-				float dblY = (float) ((dbl2[1]-requestTR.getY())/downsampleTR ); // Source							
+				float dblX = (float) ( (dbl2[0]-requestTR.getX()) / downsampleTR );
+				float dblY = (float) ( (dbl2[1]-requestTR.getY()) / downsampleTR );
 				
 				if (dblX >= xB1 && dblY >= yB1 && dblX < (widthTransform-xB2) && dblY < (heightTransform-yB2)) {				
 					
 					if (interpolationMode == InterpolationType.BILINEAR) {											
 						// Portion from Burger&Burge, Digital Image Processing, 2010
-						xx = (int)Math.floor(dblX);
-						yy = (int)Math.floor(dblY);		
+						xx = (int) Math.floor(dblX);
+						yy = (int) Math.floor(dblY);
 						
 						index = yy * widthTransform + xx;
 
 						for (int b=0; b<nBands; b++) {
+
 							p1 = pixelsFloat[b][index];
 							p2 = pixelsFloat[b][index + 1];
 							p3 = pixelsFloat[b][index + widthTransform];
@@ -417,16 +524,14 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 							pOut = pA + kb*(pB - pA);
 							
 							if ( isNotFloatType ) {
-								raster.setSample(x, y, b, (int)Math.round(pOut));
-								//samplesInt[b][offset+x] = (int)Math.round(pOut);
+								raster.setSample(x, y, b, Math.round(pOut));
 							}
 							else {
 								raster.setSample(x, y, b, pOut);
-								//samplesFloat[b][offset+x] = pOut;
 							}
 						}
 					}
-					else if ( useCubicInterpolation ) { //interpolationMode == InterpolationType.BICUBIC) { 
+					else if ( useCubicInterpolation ) {
 						// Portion from Burger&Burge, Digital Image Processing, 2010
 						// https://en.wikipedia.org/wiki/Bicubic_interpolation
 						xx = (int)Math.floor(dblX);
@@ -446,35 +551,24 @@ public class RealTransformImageServer extends TransformingImageServer<BufferedIm
 							}
 							
 							if ( isNotFloatType ) {
-								raster.setSample(x, y, b, (int)Math.round(pA));
-								//samplesInt[b][offset+x] = (int)Math.round(pA);
+								raster.setSample(x, y, b, Math.round(pA));
 							}
 							else {
 								raster.setSample(x, y, b, pA);
-								//samplesFloat[b][offset+x] = pA;
 							}
 						}
 					}
 					else {  // Nearest neighbor Interpolation
-						xx = (int)Math.round(dblX);
-						yy = (int)Math.round(dblY);		
-						
-						elements = rasterTransform.getDataElements(xx, yy, elements);// Source
+						xx = Math.round(dblX);
+						yy = Math.round(dblY);
+
+						elements = rasterTransform.getDataElements(xx, yy, elements); // Source
 						raster.setDataElements(x, y, elements); // Target
 					}				
 				}				
 			}
 		}
-		/*
-		if (interpolationMode == InterpolationType.BILINEAR || useCubicInterpolation) {
-			for (int b=0; b<nBands; b++) {
-				if ( isNotFloatType )
-					raster.setSamples(0, 0, w, h, b, samplesInt[b]);
-				else
-					raster.setSamples(0, 0, w, h, b, samplesFloat[b]);
-			}
-		}
-		*/
+
 		return new BufferedImage(img.getColorModel(), raster, img.isAlphaPremultiplied(), null);
 	}
 

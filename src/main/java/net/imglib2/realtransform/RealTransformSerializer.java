@@ -7,7 +7,6 @@ import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qupath.ext.warpy.Warpy;
 import qupath.ext.warpy.WarpyExtension;
 import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
 import qupath.lib.io.GsonTools;
@@ -64,24 +63,33 @@ public class RealTransformSerializer {
 		@Override
 		public RealTransformInterpolation deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
 		    JsonObject obj = jsonElement.getAsJsonObject();
-		    int interpolation = obj.get("interpolation").getAsInt();
-		    RealTransformInterpolation rtis = new RealTransformInterpolation();
-		    rtis.setInterpolation(interpolation);
             String version = obj.get("version").getAsString();
-            rtis.setVersion(version);
+		    int interpolation = obj.get("interpolation").getAsInt();
+
+            boolean downsample = false;
+            if (obj.get("downsample")!=null) { // For backward compatibility
+                downsample = obj.get("downsample").getAsBoolean();
+            }
+
+            int downsample_px = 1;
+            if (obj.get("downsample_px")!=null) { // For backward compatibility
+                downsample_px = obj.get("downsample_px").getAsInt();
+            }
             if (!version.equals(WarpyExtension.getWarpyVersion())) {
                 logger.warn("Warpy version "+WarpyExtension.getWarpyVersion()+" different from ImageServer "+version);
             }
             RealTransform transform = RealTransformSerializer.getRealTransformAdapter().fromJson(obj.get("transform"), RealTransform.class);
-            rtis.setTransform(transform);
+            RealTransformInterpolation rtis = new RealTransformInterpolation(transform, interpolation, downsample, downsample_px);
 		    return rtis;
 		}
-		
+
 		@Override
 		public JsonElement serialize(RealTransformInterpolation rtis, Type type, JsonSerializationContext jsonSerializationContext) {
 		    JsonObject obj = new JsonObject();
-            obj.addProperty("interpolation", rtis.getInterpolation());
             obj.addProperty("version", rtis.getVersion());
+            obj.addProperty("interpolation", rtis.getInterpolation());
+            obj.addProperty("downsample", rtis.downsampleTransformation());
+            obj.addProperty("downsample_px", rtis.getTransformationDownsampling());
             obj.add("transform", jsonSerializationContext.serialize(rtis.getTransform(), RealTransform.class));
 		    return obj;
 		}
