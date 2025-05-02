@@ -1,9 +1,14 @@
-import java.util.Date
-
 plugins {
     id 'java-library'
     id 'maven-publish'
     alias(libs.plugins.javafx)
+}
+
+ext.moduleName = "qupath.ext.warpy"
+
+base {
+    archivesName = 'qupath-extension-warpy'
+    description = 'Warpy - QuPath extension that supports spline transformations.'
 }
 
 repositories {
@@ -22,8 +27,7 @@ repositories {
 
 ext.qupathVersion = gradle.ext.qupathVersion
 
-ext.moduleName = "qupath.ext.warpy"
-description = "QuPath extension to use Warpy"
+description = "Warpy - QuPath extension that supports transformations (affine, spline) of images."
 version = "0.4.0-SNAPSHOT"
 
 dependencies {
