@@ -474,11 +474,11 @@ public class Warpy {
 
     /**
      * Main class for debugging
-     *
+     * Can be used to start a QuPath project with a project already opened
      * @param args some inputs we do not need
      */
     public static void main(String... args) {
-        //String projectPath = "\\\\svfas6.epfl.ch\\biop\\public\\luisa.spisak_UPHUELSKEN\\Overlay\\qp\\project.qpproj";
+        String projectPath = "\\\\svfas6.epfl.ch\\biop\\public\\luisa.spisak_UPHUELSKEN\\Overlay\\qp\\project.qpproj";
         QuPathApp.launch(QuPathApp.class);//, projectPath);
     }
 }
