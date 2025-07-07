@@ -11,7 +11,7 @@ plugins {
 qupathExtension {
     name = "qupath-extension-warpy"
     group = "qupath.ext.warpy"
-    version = "0.4.1-SNAPSHOT"
+    version = "0.4.1"
     description = "Warpy - QuPath extension that supports spline transformations."
     automaticModule = "qupath.ext.warpy"
 }
