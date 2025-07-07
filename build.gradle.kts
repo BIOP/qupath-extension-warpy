@@ -8,10 +8,10 @@ plugins {
 // TODO: Configure your extension here (please change the defaults!)
 qupathExtension {
     name = "qupath-extension-warpy"
-    group = "io.github.BIOP"
+    group = "qupath.ext.warpy"
     version = "0.4.1-SNAPSHOT"
     description = "Warpy - QuPath extension that supports spline transformations."
-    automaticModule = "io.github.BIOP.extension.warpy"
+    automaticModule = "qupath.ext.warpy"
 }
 
 // TODO: Define your dependencies here
