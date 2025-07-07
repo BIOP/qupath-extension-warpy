@@ -26,7 +26,7 @@ dependencies {
 }
 
 // Publishing configuration for SciJava Maven
-publishing {
+/*publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
@@ -84,6 +84,36 @@ publishing {
                 credentials {
                     username = System.getenv("MAVEN_USER")
                     password = System.getenv("MAVEN_PASS")
+                }
+            }
+        }
+    }
+}*/
+
+publishing {
+    repositories {
+        maven {
+            name = "SciJava"
+            val releasesRepoUrl = uri("https://maven.scijava.org/content/repositories/releases")
+            val snapshotsRepoUrl = uri("https://maven.scijava.org/content/repositories/snapshots")
+            // Use gradle -Prelease publish
+            url = if (project.hasProperty("release")) releasesRepoUrl else snapshotsRepoUrl
+            credentials {
+                username = System.getenv("MAVEN_USER")
+                password = System.getenv("MAVEN_PASS")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = "qupath.ext.warpy"
+            from(components["java"])
+            pom {
+                licenses {
+                    license {
+                        name.set("BSD-3-Clause")
+                        url.set("https://opensource.org/licenses/BSD-3-Clause")
+                    }
                 }
             }
         }
