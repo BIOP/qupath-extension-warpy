@@ -13,8 +13,18 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  prepare:
+    runs-on: ubuntu-latest
     steps:
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - uses: qupath/actions/.github/workflows/gradle.yml@main
+      - uses: actions/checkout@v4
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace
+          path: .
+
+  build:
+    needs: prepare
+    uses: qupath/actions/.github/workflows/gradle.yml@main
