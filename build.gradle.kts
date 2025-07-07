@@ -71,16 +71,20 @@ publishing {
     }
 
     repositories {
-        maven {
-            name = "scijava"
-            url = if (version.toString().endsWith("SNAPSHOT")) {
-                uri("https://maven.scijava.org/content/repositories/snapshots")
-            } else {
-                uri("https://maven.scijava.org/content/repositories/releases")
-            }
-            credentials {
-                username = System.getenv("MAVEN_USER")
-                password = System.getenv("MAVEN_PASS")
+        repositories {
+            maven {
+                name = "scijava"
+                val repoUrl = if (version.toString().endsWith("SNAPSHOT")) {
+                    uri("https://maven.scijava.org/content/repositories/snapshots")
+                } else {
+                    uri("https://maven.scijava.org/content/repositories/releases")
+                }
+                println("Publishing version $version to $repoUrl")
+                url = repoUrl
+                credentials {
+                    username = System.getenv("MAVEN_USER")
+                    password = System.getenv("MAVEN_PASS")
+                }
             }
         }
     }
