@@ -1,4 +1,4 @@
-name: Publish to SciJava Maven
+name: Publish to SciJava Maven (Root)
 
 on:
   workflow_call:
