@@ -1,6 +1,6 @@
 plugins {
     // To optionally create a shadow/fat jar that bundle up any non-core dependencies
-    id("com.gradleup.shadow") version "8.3.5"
+    // id("com.gradleup.shadow") version "8.3.5"
     // QuPath Gradle extension convention plugin
     id("qupath-conventions")
     // Add the maven-publish plugin
