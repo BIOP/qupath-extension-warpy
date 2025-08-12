@@ -8,12 +8,9 @@ This repo adds some support for nonlinear deformation and registration in QuPath
 
 ## Installing
 
-Download the latest `qupath-extension-warpy-[version].zip` file from [releases](https://github.com/biop/qupath-extension-warpy/releases). Unzip it, then and drag its contained files onto the main QuPath window.
+In QuPath 0.6, this extension should be installed via the [QuPath BIOP catalog](https://github.com/BIOP/qupath-biop-catalog).
 
-If you haven't installed any extensions before, you'll be prompted to select a QuPath user directory.
-The extension will then be copied to a location inside that directory.
-
-You might then need to restart QuPath (but not your computer).
+Don't forget to restart QuPath (but not your computer).
 
 ## Citing
 
