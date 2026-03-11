@@ -1,7 +1,8 @@
-package net.imglib2.realtransform;
+package qupath.ext.imagecombinerwarpy.realtransform;
 
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
+import net.imglib2.realtransform.InvertibleRealTransform;
 
 /**
  * Class copied from bigwarp_fiji repo because to avoid bringing

@@ -11,7 +11,7 @@ plugins {
 qupathExtension {
     name = "qupath-extension-warpy"
     group = "qupath.ext.warpy"
-    version = "0.4.2"
+    version = "0.5.0"
     description = "Warpy - QuPath extension that supports spline transformations."
     automaticModule = "qupath.ext.warpy"
 }
@@ -21,7 +21,7 @@ dependencies {
     implementation(libs.bundles.qupath)
     implementation(libs.qupath.fxtras)
     implementation("commons-io:commons-io:2.15.0")
-    implementation("net.imglib2:imglib2-realtransform:3.1.2")
+    implementation("net.imglib2:imglib2-realtransform:4.0.4")
 }
 
 publishing {

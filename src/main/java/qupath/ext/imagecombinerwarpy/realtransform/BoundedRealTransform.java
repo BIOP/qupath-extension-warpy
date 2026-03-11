@@ -1,8 +1,10 @@
-package net.imglib2.realtransform;
+package qupath.ext.imagecombinerwarpy.realtransform;
 
 import net.imglib2.RealInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
+import net.imglib2.realtransform.InvertibleRealTransform;
+import net.imglib2.realtransform.RealTransform;
 
 /**
  * RealTransform object limiting the extend of the transformation computation.
