@@ -1,18 +1,33 @@
-package net.imglib2.realtransform;
+package qupath.ext.imagecombinerwarpy.realtransform;
 
-import com.google.gson.*;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.List;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.FinalRealInterval;
+import net.imglib2.realtransform.AbstractRealTransformSequence;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleRealTransform;
+import net.imglib2.realtransform.InvertibleRealTransformSequence;
+import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformSequence;
+import net.imglib2.realtransform.ThinplateSplineTransform;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qupath.ext.warpy.WarpyExtension;
 import qupath.ext.imagecombinerwarpy.gui.RealTransformInterpolation;
+import qupath.ext.warpy.WarpyExtension;
 import qupath.lib.io.GsonTools;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 
 /**
  * Imglib2 Real transforms adapters already used in bigdataviewer-playground
@@ -304,11 +319,16 @@ public class RealTransformSerializer {
         @Override
         public JsonElement serialize(RealTransformSequence rts, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject obj = new JsonObject();
-            obj.addProperty("size", rts.transforms.size());
-            for (int iTransform = 0; iTransform<rts.transforms.size(); iTransform++) {
-                obj.add("realTransform_"+iTransform, jsonSerializationContext.serialize(rts.transforms.get(iTransform), RealTransform.class));
+            try {
+                List<RealTransform> transforms = getTransforms(rts);
+                obj.addProperty("size", transforms.size());
+                for (int iTransform = 0; iTransform<transforms.size(); iTransform++) {
+                    obj.add("realTransform_"+iTransform, jsonSerializationContext.serialize(transforms.get(iTransform), RealTransform.class));
+                }
+                return obj;
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
-            return obj;
         }
     }
 
@@ -338,11 +358,16 @@ public class RealTransformSerializer {
         @Override
         public JsonElement serialize(InvertibleRealTransformSequence irts, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject obj = new JsonObject();
-            obj.addProperty("size", irts.transforms.size());
-            for (int iTransform = 0; iTransform<irts.transforms.size(); iTransform++) {
-                obj.add("realTransform_"+iTransform, jsonSerializationContext.serialize(irts.transforms.get(iTransform), RealTransform.class));
+            try {
+                List<InvertibleRealTransform> transforms = getTransforms(irts);
+                obj.addProperty("size", transforms.size());
+                for (int iTransform = 0; iTransform<transforms.size(); iTransform++) {
+                    obj.add("realTransform_"+iTransform, jsonSerializationContext.serialize(transforms.get(iTransform), RealTransform.class));
+                }
+                return obj;
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
-            return obj;
         }
     }
 
@@ -374,6 +399,14 @@ public class RealTransformSerializer {
             element = converted;
         }
         return element;
+    }
+
+    private static <R extends RealTransform> List<R> getTransforms(AbstractRealTransformSequence<R> sequence) throws NoSuchFieldException, IllegalAccessException {
+        Field field = AbstractRealTransformSequence.class.getDeclaredField("transforms");
+        field.setAccessible(true);
+        List<R> transforms = (List<R>)field.get(sequence);
+        logger.debug("Found {} transforms by reflection", transforms.size());
+        return transforms;
     }
 
 }

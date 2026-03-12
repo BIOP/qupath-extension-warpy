@@ -16,7 +16,7 @@ package qupath.ext.imagecombinerwarpy;
  * 
  *********************************/
 
-import net.imglib2.realtransform.RealTransformSerializer;
+import qupath.ext.imagecombinerwarpy.realtransform.RealTransformSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformSerializer;
+import qupath.ext.imagecombinerwarpy.realtransform.RealTransformSerializer;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFilter;
 import org.locationtech.jts.geom.Geometry;
