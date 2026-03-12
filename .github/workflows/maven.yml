@@ -42,7 +42,7 @@ jobs:
         if: ${{ inputs.release == false }}
         shell: bash
         run: |
-          ./gradlew publish -Ptoolchain=21 ${{ inputs.gradle-args }}
+          ./gradlew publish -Ptoolchain=25 ${{ inputs.gradle-args }}
         env:
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
