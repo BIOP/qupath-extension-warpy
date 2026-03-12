@@ -3,6 +3,7 @@ package qupath.ext.warpy;
 import org.controlsfx.control.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qupath.ext.imagecombinerwarpy.gui.*;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.Version;
 import qupath.lib.gui.QuPathGUI;
@@ -40,9 +41,7 @@ public class WarpyExtension implements QuPathExtension, GitHubProject {
         if(isInstalled)
             return;
 
-        SCRIPTS.entrySet().forEach(entry -> {
-            String name = entry.getValue();
-            String command = entry.getKey();
+        SCRIPTS.forEach((command, name) -> {
             try (InputStream stream = WarpyExtension.class.getClassLoader().getResourceAsStream(name)) {
                 String script = new String(stream.readAllBytes(), "UTF-8");
                 if (script != null) {

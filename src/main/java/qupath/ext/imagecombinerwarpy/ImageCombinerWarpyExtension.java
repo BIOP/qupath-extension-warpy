@@ -42,37 +42,50 @@ public class ImageCombinerWarpyExtension implements QuPathExtension, GitHubProje
 	private static final Logger logger = LoggerFactory.getLogger(ImageCombinerWarpyExtension.class);
 	
 	private static boolean alreadyInstalled = false;
+
+    private static boolean imageServerAlreadyAdded = false;
 	
-	private static final Version minimumVersion = Version.parse("0.3.0-SNAPSHOT");
+	private static final Version minimumVersion = Version.parse("0.7.0");
 
     @Override
     public void installExtension(QuPathGUI qupath) {
     	if (alreadyInstalled || !checkCompatibility())
 			return;
 		
-		try {			
-			
-	        SubTypeAdapterFactory<ServerBuilder> typeAdapterFactory = (SubTypeAdapterFactory<ServerBuilder>) ImageServers.getServerBuilderFactory();
-	        		
-			typeAdapterFactory.registerSubtype(RealTransformImageServerBuilder.class, "realtransform");
-			typeAdapterFactory.registerSubtype(AffineTransformInterpolationImageServerBuilder.class, "transforminterpolate");
-			
-			GsonBuilder builder = GsonTools.getDefaultBuilder();
-
-			builder.registerTypeAdapter(AffineTransformInterpolationTypeAdapter.class, new AffineTransformInterpolationTypeAdapter());
-			RealTransformSerializer.addRealTransformAdapters(builder);
-			builder.registerTypeAdapter(RealTransformInterpolation.class, new RealTransformSerializer.RealTransformInterpolationAdapter());
-
-			// Add ImageCombinerWarpy
+		try {
+            addWarpyImageServer();
+			// Add ImageCombinerWarpy action
 			var imageCombinerWarpy = ActionTools.createAction(new InteractiveImageCombinerWarpyCommand(qupath), "Interactive image combiner Warpy");
-			MenuTools.addMenuItems(qupath.getMenu("Analyze", false),
-			imageCombinerWarpy);
-
+			MenuTools.addMenuItems(qupath.getMenu("Analyze", false), imageCombinerWarpy);
 	    	alreadyInstalled = true;
-			
 		} catch (Throwable t) {
 			logger.debug("Unable to add ImageCombinerWarpy to menu", t);
 		}		
+    }
+
+    @Override
+    public void installHeadless() {
+        addWarpyImageServer();
+    }
+
+    private void addWarpyImageServer() {
+        if (imageServerAlreadyAdded) return;
+        try {
+            // Adds ImageCombinerWarpy custom image servers
+            SubTypeAdapterFactory<ServerBuilder> typeAdapterFactory = (SubTypeAdapterFactory<ServerBuilder>) ImageServers.getServerBuilderFactory();
+
+            typeAdapterFactory.registerSubtype(RealTransformImageServerBuilder.class, "realtransform");
+            typeAdapterFactory.registerSubtype(AffineTransformInterpolationImageServerBuilder.class, "transforminterpolate");
+
+            GsonBuilder builder = GsonTools.getDefaultBuilder();
+
+            builder.registerTypeAdapter(AffineTransformInterpolationTypeAdapter.class, new AffineTransformInterpolationTypeAdapter());
+            RealTransformSerializer.addRealTransformAdapters(builder);
+            builder.registerTypeAdapter(RealTransformInterpolation.class, new RealTransformSerializer.RealTransformInterpolationAdapter());
+            imageServerAlreadyAdded = true;
+        } catch (Throwable t) {
+            logger.debug("Unable to add ImageCombinerWarpy image server", t);
+        }
     }
 
     /**
